@@ -7,8 +7,6 @@ dokka {
     kotlinTasks {
         defaultKotlinTasks().findAll { it.name.contains("Jvm") }
     }
-
-    reportUndocumented = false
 }
 
 task dokkaJar(type: Jar, dependsOn: 'dokka') {

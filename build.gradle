@@ -240,11 +240,30 @@ afterEvaluate {
     }
 
     task dokkaWebsite(type: dokka.getClass()) {
-        outputFormat = 'kotlin-website'
+        subProjects = subprojects.collectMany { [it.name] }
+        outputFormat = 'kotlin-website-html'
         outputDirectory = "${rootProject.projectDir}/apidoc"
 
-        kotlinTasks { allCompileKotlinTasks }
+        multiplatform {
+            common {
+                targets = ["common"]
+            }
 
-        reportUndocumented = false
+            jvm {
+                targets = ["jvm"]
+            }
+
+            js {
+                targets = ["js"]
+            }
+
+            linuxX64 {
+                targets = ["posix"]
+            }
+
+            macosX64 {
+                targets = ["darwin"]
+            }
+        }
     }
 }
