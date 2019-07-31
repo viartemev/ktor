@@ -7,10 +7,6 @@ package io.ktor.client.engine.android
 import io.ktor.client.tests.*
 import org.junit.*
 
-class AndroidCookiesTest : CookiesTest(Android)
-
 class AndroidMultithreadedTest : MultithreadedTest(Android)
-
-class AndroidBuildersTest : BuildersTest(Android)
 
 class AndroidHttpClientTest : HttpClientTest(Android)

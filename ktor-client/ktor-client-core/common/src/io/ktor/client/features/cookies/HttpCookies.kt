@@ -42,7 +42,7 @@ class HttpCookies(private val storage: CookiesStorage) : Closeable {
         /**
          * List of default cookies.
          */
-        val default: MutableList<Cookie> = mutableListOf()
+        val default: MutableList<Pair<String, Cookie>> = mutableListOf()
 
         /**
          * Registers a [block] that will be called when the configuration is complete the specified [storage].
@@ -59,7 +59,7 @@ class HttpCookies(private val storage: CookiesStorage) : Closeable {
         /**
          * Setup default cookies by calling [CookiesStorage.addCookie].
          */
-        fun default(vararg cookies: Cookie) {
+        fun default(vararg cookies: Pair<String, Cookie>) {
             default += cookies
         }
 
