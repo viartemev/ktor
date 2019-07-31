@@ -40,11 +40,27 @@ class HttpCookies(private val storage: CookiesStorage) : Closeable {
         var storage: CookiesStorage = AcceptAllCookiesStorage()
 
         /**
-         * Registers a [block] that will be called when the configuration is complete the specified [storage].
-         * The [block] can potentially add new cookies by calling [CookiesStorage.addCookie].
+         * List of default cookies.
          */
+        val default: MutableList<Cookie> = mutableListOf()
+
+        /**
+         * Registers a [block] that will be called when the configuration is complete the specified [storage].
+         */
+        @Deprecated(
+            "Consider replacing [block] with list of default cookies",
+            ReplaceWith(""),
+            DeprecationLevel.ERROR
+        )
         fun default(block: CookiesStorage.() -> Unit) {
             defaults.add(block)
+        }
+
+        /**
+         * Setup default cookies by calling [CookiesStorage.addCookie].
+         */
+        fun default(vararg cookies: Cookie) {
+            default += cookies
         }
 
         internal fun build(): HttpCookies {
