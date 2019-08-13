@@ -15,7 +15,7 @@ import kotlin.test.*
 
 class CookiesTest : ClientLoader() {
     private val TEST_URL = "$TEST_SERVER/cookies"
-    private val hostname = "http://localhost"
+    private val hostname = TEST_SERVER
 
     @Test
     fun testCompatibility() = clientTest(MockEngine) {
@@ -67,14 +67,14 @@ class CookiesTest : ClientLoader() {
     }
 
     @Test
-    fun testAccept(): Unit = clientTests {
+    fun testAccept() = clientTests {
         config {
             install(HttpCookies)
         }
 
         test { client ->
             client.get<Unit>(TEST_URL)
-            client.cookies(hostname).let {
+            client.cookies("$hostname/cookies").let {
                 assertEquals(1, it.size)
                 assertEquals("my-awesome-value", it["hello-cookie"]!!.value)
             }
@@ -82,11 +82,11 @@ class CookiesTest : ClientLoader() {
     }
 
     @Test
-    fun testUpdate(): Unit = clientTests {
+    fun testUpdate() = clientTests {
         config {
             install(HttpCookies) {
                 default(
-                    hostname to Cookie("id", "1", domain = "localhost")
+                    hostname to Cookie("id", "1", domain = "127.0.0.1")
                 )
             }
         }
@@ -102,11 +102,11 @@ class CookiesTest : ClientLoader() {
     }
 
     @Test
-    fun testExpiration(): Unit = clientTests {
+    fun testExpiration() = clientTests {
         config {
             install(HttpCookies) {
                 default(
-                    hostname to Cookie("id", "777", domain = "localhost", path = "/")
+                    hostname to Cookie("id", "777", domain = "127.0.0.1", path = "/")
                 )
             }
 
@@ -119,10 +119,10 @@ class CookiesTest : ClientLoader() {
     }
 
     @Test
-    fun testConstant(): Unit = clientTests {
+    fun testConstant() = clientTests {
         config {
             install(HttpCookies) {
-                storage = ConstantCookiesStorage(Cookie("id", "1", domain = "localhost"))
+                storage = ConstantCookiesStorage(Cookie("id", "1", domain = "127.0.0.1"))
             }
         }
 
@@ -136,12 +136,12 @@ class CookiesTest : ClientLoader() {
     }
 
     @Test
-    fun testMultipleCookies(): Unit = clientTests {
+    fun testMultipleCookies() = clientTests {
         config {
             install(HttpCookies) {
                 default(
-                    hostname to Cookie("first", "first-cookie", domain = "localhost"),
-                    hostname to Cookie("second", "second-cookie", domain = "localhost")
+                    hostname to Cookie("first", "first-cookie", domain = "127.0.0.1"),
+                    hostname to Cookie("second", "second-cookie", domain = "127.0.0.1")
                 )
             }
         }
@@ -249,5 +249,15 @@ class CookiesTest : ClientLoader() {
         }
     }
 
-    private suspend fun HttpClient.getId() = cookies(hostname)["id"]!!.value.toInt()
+    private suspend fun HttpClient.getId(): Int {
+        val cookie = cookies(hostname)
+        if (cookie.isEmpty()) {
+            val x = cookies(hostname)
+
+            check(x.isEmpty())
+        }
+
+
+        return cookie["id"]!!.value.toInt()
+    }
 }

@@ -8,7 +8,7 @@ import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-internal fun Application.features() {
+internal fun Application.featuresTest() {
     routing {
         route("features") {
             get("/body") {

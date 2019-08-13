@@ -10,6 +10,7 @@ import io.ktor.client.request.*
 import io.ktor.client.response.*
 import io.ktor.http.*
 import io.ktor.util.*
+import kotlinx.coroutines.*
 import kotlinx.io.core.*
 
 /**
@@ -19,54 +20,68 @@ import kotlinx.io.core.*
  * You can configure the [Config.storage] and to provide [Config.default] blocks to set
  * cookies when installing.
  */
-class HttpCookies(private val storage: CookiesStorage) : Closeable {
+class HttpCookies(
+    private val storage: CookiesStorage,
+    private val defaults: List<Pair<Url, Cookie>>
+) : Closeable {
+    private lateinit var init: Job
 
     /**
      * Find all cookies by [requestUrl].
      */
-    suspend fun get(requestUrl: Url): List<Cookie> = storage.get(requestUrl)
+    suspend fun get(requestUrl: Url): List<Cookie> {
+        init.join()
+        return storage.get(requestUrl)
+    }
+
+    suspend fun addCookie(url: Url, cookie: Cookie) {
+        init.join()
+        storage.addCookie(url, cookie)
+    }
 
     override fun close() {
         storage.close()
     }
 
     class Config {
-        private val defaults = mutableListOf<CookiesStorage.() -> Unit>()
+        private val defaultConfig = mutableListOf<CookiesStorage.() -> Unit>()
 
         /**
          * [CookiesStorage] that will be used at this feature.
          * By default it just uses an initially empty in-memory [AcceptAllCookiesStorage].
          */
-        var storage: CookiesStorage = AcceptAllCookiesStorage()
+        var storage: CookiesStorage? = null
 
         /**
          * List of default cookies.
          */
-        val default: MutableList<Pair<String, Cookie>> = mutableListOf()
+        val defaultCookies: MutableList<Pair<Url, Cookie>> = mutableListOf()
 
         /**
          * Registers a [block] that will be called when the configuration is complete the specified [storage].
          */
-        @Deprecated(
-            "Consider replacing [block] with list of default cookies",
-            ReplaceWith(""),
-            DeprecationLevel.ERROR
-        )
         fun default(block: CookiesStorage.() -> Unit) {
-            defaults.add(block)
+            defaultConfig.add(block)
         }
 
         /**
          * Setup default cookies by calling [CookiesStorage.addCookie].
          */
         fun default(vararg cookies: Pair<String, Cookie>) {
-            default += cookies
+            val default = cookies.map { (urlString, cookie) ->
+                Url(urlString) to cookie
+            }
+            defaultCookies += default
         }
 
         internal fun build(): HttpCookies {
-            defaults.forEach { it.invoke(storage) }
+            val storage = storage ?: AcceptAllCookiesStorage()
 
-            return HttpCookies(storage)
+            defaultConfig.forEach {
+                it(storage)
+            }
+
+            return HttpCookies(storage, defaultCookies)
         }
     }
 
@@ -76,9 +91,14 @@ class HttpCookies(private val storage: CookiesStorage) : Closeable {
         override val key: AttributeKey<HttpCookies> = AttributeKey("HttpCookies")
 
         override fun install(feature: HttpCookies, scope: HttpClient) {
+            feature.init = scope.launch {
+                feature.defaults.forEach { (url, cookie) ->
+                    feature.storage.addCookie(url, cookie)
+                }
+            }
+
             scope.sendPipeline.intercept(HttpSendPipeline.State) {
                 val cookies = feature.get(context.url.clone().build())
-
                 with(context) {
                     headers[HttpHeaders.Cookie] = renderClientCookies(cookies)
                 }
@@ -87,7 +107,7 @@ class HttpCookies(private val storage: CookiesStorage) : Closeable {
             scope.receivePipeline.intercept(HttpReceivePipeline.State) { response ->
                 val url = context.request.url
                 response.setCookie().forEach {
-                    feature.storage.addCookie(url, it)
+                    feature.addCookie(url, it)
                 }
             }
         }

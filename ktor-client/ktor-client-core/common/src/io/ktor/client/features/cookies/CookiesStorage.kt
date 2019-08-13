@@ -42,7 +42,11 @@ internal fun Cookie.matches(requestUrl: Url): Boolean {
         if (pathInRequest.endsWith('/')) pathInRequest else "$pathInRequest/"
     }
 
-    if (host != domain && (hostIsIp(host) || !host.endsWith(".$domain"))) return false
+    val matchHosts = (host == domain)
+    val hostIsIp = hostIsIp(host)
+    val isSubDomain = host.endsWith(".$domain")
+
+    if (!matchHosts && (hostIsIp || !isSubDomain)) return false
 
     if (path != "/" &&
         requestPath != path &&

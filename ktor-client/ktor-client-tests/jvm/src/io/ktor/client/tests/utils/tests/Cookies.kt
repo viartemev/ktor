@@ -14,7 +14,7 @@ internal fun Application.cookiesTest() {
     routing {
         route("cookies") {
             get("/") {
-                val cookie = Cookie("hello-cookie", "my-awesome-value", domain = "localhost")
+                val cookie = Cookie("hello-cookie", "my-awesome-value", domain = "127.0.0.1")
                 context.response.cookies.append(cookie)
 
                 context.respond("Done")
@@ -27,8 +27,8 @@ internal fun Application.cookiesTest() {
                 }
 
                 with(context.response.cookies) {
-                    append(Cookie("id", (id + 1).toString(), domain = "localhost", path = "/"))
-                    append(Cookie("user", "ktor", domain = "localhost", path = "/"))
+                    append(Cookie("id", (id + 1).toString(), domain = "127.0.0.1", path = "/"))
+                    append(Cookie("user", "ktor", domain = "127.0.0.1", path = "/"))
                 }
 
                 context.respond("Done")
@@ -43,7 +43,7 @@ internal fun Application.cookiesTest() {
                 context.respond("Multiple done")
             }
             get("/withPath") {
-                val cookie = Cookie("marker", "value", path = "/withPath/")
+                val cookie = Cookie("marker", "value", path = "/cookies/withPath/")
                 context.response.cookies.append(cookie)
                 context.respond("OK")
             }

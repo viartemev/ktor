@@ -16,15 +16,16 @@ internal fun Application.tests() {
     install(WebSockets)
 
     authTestServer()
-    encodingTestServer()
-    serializationTestServer()
-    cacheTestServer()
-    loggingTestServer()
-    contentTestServer()
-    fullFormTest()
-    redirectTest()
-    cookiesTest()
     buildersTest()
+    cacheTestServer()
+    contentTestServer()
+    cookiesTest()
+    encodingTestServer()
+    featuresTest()
+    fullFormTest()
+    loggingTestServer()
+    redirectTest()
+    serializationTestServer()
 
     routing {
         post("/echo") {
