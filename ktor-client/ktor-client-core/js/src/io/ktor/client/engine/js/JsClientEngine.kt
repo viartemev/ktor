@@ -19,7 +19,7 @@ import org.w3c.dom.events.*
 import org.w3c.fetch.Headers
 import kotlin.coroutines.*
 
-internal class JsClientEngine(override val config: HttpClientEngineConfig) : HttpClientEngine {
+internal class JsClientEngine(override val config: JsEngineConfig) : HttpClientEngine {
     override val dispatcher: CoroutineDispatcher = Dispatchers.Default
 
     override val coroutineContext: CoroutineContext = dispatcher + SupervisorJob()
@@ -39,9 +39,15 @@ internal class JsClientEngine(override val config: HttpClientEngineConfig) : Htt
 
         val requestTime = GMTDate()
         val rawRequest = data.toRaw(callContext)
+
+        config.requestConfig(rawRequest)
+
         val rawResponse = fetch(data.url.toString(), rawRequest)
 
         val status = HttpStatusCode(rawResponse.status.toInt(), rawResponse.statusText)
+        if (rawResponse.url.contains("cookies")) {
+            val rawHeaders = rawResponse.headers
+        }
         val headers = rawResponse.headers.mapToKtor()
         val version = HttpProtocolVersion.HTTP_1_1
 

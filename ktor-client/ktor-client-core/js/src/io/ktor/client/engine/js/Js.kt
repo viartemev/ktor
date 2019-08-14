@@ -9,10 +9,10 @@ import io.ktor.client.engine.*
 /**
  * [HttpClientEngineFactory] using a fetch API to execute requests.
  */
-object Js : HttpClientEngineFactory<HttpClientEngineConfig> {
-    override fun create(block: HttpClientEngineConfig.() -> Unit): HttpClientEngine =
-        JsClientEngine(HttpClientEngineConfig().apply(block))
+object Js : HttpClientEngineFactory<JsEngineConfig> {
+    override fun create(block: JsEngineConfig.() -> Unit): HttpClientEngine =
+        JsClientEngine(JsEngineConfig().apply(block))
 }
 
 @JsName("JsClient")
-fun JsClient(): HttpClientEngineFactory<HttpClientEngineConfig> = Js
+fun JsClient(): HttpClientEngineFactory<JsEngineConfig> = Js
