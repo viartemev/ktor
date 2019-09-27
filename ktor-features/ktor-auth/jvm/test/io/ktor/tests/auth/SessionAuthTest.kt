@@ -63,7 +63,7 @@ class SessionAuthTest {
             runBlocking {
                 val cookieStorage = AcceptAllCookiesStorage()
 
-                HttpClient(TestHttpClientEngine.create { this.app = this@withTestApplication }) {
+                HttpClient(TestHttpClient) {
                     expectSuccess = false
                     install(HttpCookies) {
                         storage = cookieStorage
@@ -133,7 +133,7 @@ class SessionAuthTest {
             runBlocking {
                 val cookieStorage = AcceptAllCookiesStorage()
 
-                HttpClient(TestHttpClientEngine.create { this.app = this@withTestApplication }) {
+                HttpClient(TestHttpClient) {
                     expectSuccess = false
                     install(HttpCookies) {
                         storage = cookieStorage
