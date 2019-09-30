@@ -598,7 +598,7 @@ private fun createOAuth2Server(server: OAuth2Server): HttpClient {
     }
     with(TestApplicationEngine(environment)) {
         start()
-        return HttpClient(TestHttpClient) {
+        return client.config {
             expectSuccess = false
         }
     }

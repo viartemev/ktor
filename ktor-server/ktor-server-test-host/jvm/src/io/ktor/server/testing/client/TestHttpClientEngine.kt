@@ -14,16 +14,16 @@ import io.ktor.util.*
 import io.ktor.util.date.*
 import kotlinx.coroutines.*
 import io.ktor.utils.io.*
-import java.util.concurrent.*
 import kotlin.coroutines.*
 
 @Suppress("KDocMissingDocumentation")
 @KtorExperimentalAPI
 class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClientEngine {
-    override val dispatcher: CoroutineDispatcher = Dispatchers.IO
-    override val coroutineContext: CoroutineContext = dispatcher
-
     private val app: TestApplicationEngine = config.app
+    private val clientJob: CompletableJob = Job(app.coroutineContext[Job])
+
+    override val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    override val coroutineContext: CoroutineContext = dispatcher + clientJob
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = coroutineContext + Job()
@@ -65,7 +65,7 @@ class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClie
     }
 
     override fun close() {
-        app.stop(0L, 0L, TimeUnit.MILLISECONDS)
+        clientJob.complete()
     }
 
     companion object : HttpClientEngineFactory<TestHttpClientConfig> {

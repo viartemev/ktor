@@ -406,7 +406,7 @@ private fun createOAuthServer(server: TestingOAuthServer): HttpClient {
     }
     with(TestApplicationEngine(environment)) {
         start()
-        return HttpClient(TestHttpClient) {
+        return client.config {
             expectSuccess = false
         }
     }
