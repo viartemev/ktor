@@ -45,6 +45,10 @@ interface HttpClientEngine : CoroutineScope, Closeable {
      */
     @InternalAPI
     fun install(client: HttpClient) {
+        client.requestPipeline.intercept(HttpRequestPipeline.Before) {
+            context.executionContext = this@HttpClientEngine.coroutineContext[Job]!!
+        }
+
         client.sendPipeline.intercept(HttpSendPipeline.Engine) { content ->
             val requestData = HttpRequestBuilder().apply {
                 takeFrom(context)
@@ -55,12 +59,6 @@ interface HttpClientEngine : CoroutineScope, Closeable {
 
             val responseData = executeWithinCallContext(requestData)
             val call = HttpClientCall(client, requestData, responseData)
-
-            responseData.callContext[Job]!!.invokeOnCompletion { cause ->
-                @Suppress("UNCHECKED_CAST")
-                val childContext = requestData.executionContext as CompletableJob
-                if (cause == null) childContext.complete() else childContext.completeExceptionally(cause)
-            }
 
             proceedWith(call)
         }

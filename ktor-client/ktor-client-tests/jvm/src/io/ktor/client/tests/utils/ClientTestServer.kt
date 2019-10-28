@@ -24,6 +24,7 @@ internal fun Application.tests() {
     fullFormTest()
     redirectTest()
     featuresTest()
+    timeoutTest()
 
     routing {
         post("/echo") {

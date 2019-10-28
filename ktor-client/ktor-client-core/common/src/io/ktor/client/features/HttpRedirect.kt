@@ -42,16 +42,17 @@ class HttpRedirect {
         override fun prepare(block: HttpRedirect.() -> Unit): HttpRedirect = HttpRedirect().apply(block)
 
         override fun install(feature: HttpRedirect, scope: HttpClient) {
-            scope.feature(HttpSend)!!.intercept { origin ->
+            scope.feature(HttpSend)!!.intercept { context, origin ->
                 if (feature.checkHttpMethod && origin.request.method !in ALLOWED_FOR_REDIRECT) {
                     return@intercept origin
                 }
 
-                handleCall(origin, feature.allowHttpsDowngrade)
+                handleCall(context, origin, feature.allowHttpsDowngrade)
             }
         }
 
         private suspend fun Sender.handleCall(
+            context: HttpRequestBuilder,
             origin: HttpClientCall,
             allowHttpsDowngrade: Boolean
         ): HttpClientCall {
@@ -62,6 +63,8 @@ class HttpRedirect {
             val originAuthority = origin.request.url.authority
             while (true) {
                 val location = call.response.headers[HttpHeaders.Location]
+
+                call.close()
 
                 val requestBuilder = HttpRequestBuilder().apply {
                     takeFrom(origin.request)

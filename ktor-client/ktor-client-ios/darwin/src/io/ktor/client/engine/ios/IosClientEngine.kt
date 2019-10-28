@@ -6,10 +6,12 @@ package io.ktor.client.engine.ios
 
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.util.*
 import io.ktor.util.date.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
@@ -41,7 +43,12 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
                     chunks.close()
 
                     if (didCompleteWithError != null) {
-                        continuation.resumeWithException(IosHttpRequestException(didCompleteWithError))
+                        continuation.resumeWithException(
+                            when (didCompleteWithError.code) {
+                                NSURLErrorTimedOut -> HttpSocketTimeoutException()
+                                else -> IosHttpRequestException(didCompleteWithError)
+                            }
+                        )
                         return
                     }
 
@@ -94,6 +101,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
 
             val url = URLBuilder().takeFrom(data.url).buildString()
             val nativeRequest = NSMutableURLRequest.requestWithURL(NSURL(string = url))
+            nativeRequest.setupSocketTimeout(data.attributes)
 
             mergeHeaders(data.headers, data.body) { key, value ->
                 nativeRequest.setValue(value, key)
@@ -117,10 +125,26 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
                 body?.let { nativeRequest.setHTTPBody(it) }
 
                 config.requestConfig(nativeRequest)
-                session.dataTaskWithRequest(nativeRequest).resume()
+                val task = session.dataTaskWithRequest(nativeRequest)
+                continuation.invokeOnCancellation { cause ->
+                    if (cause != null && task.state == NSURLSessionTaskStateRunning) {
+                        task.cancel()
+                    }
+                }
+                task.resume()
             }
         }
     }
 }
 
+/**
+ * Update [NSMutableURLRequest] and setup timeout interval that equal to socket interval specified by [HttpTimeout].
+ */
+private fun NSMutableURLRequest.setupSocketTimeout(attributes: Attributes) {
+    // iOS timeout works like a socket timeout.
+    attributes.getOrNull(HttpTimeoutAttributes.key)?.socketTimeout?.let {
+        // Timeout should be specified in seconds.
+        setTimeoutInterval(it / 1000.0)
+    }
+}
 
