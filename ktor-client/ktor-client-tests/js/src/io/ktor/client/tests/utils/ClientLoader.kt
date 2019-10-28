@@ -17,6 +17,7 @@ actual abstract class ClientLoader {
      */
     actual fun clientTests(
         skipPlatforms: List<String>,
+        skipEngines: List<String>,
         block: suspend TestClientBuilder<HttpClientEngineConfig>.() -> Unit
     ): dynamic = if ("js" in skipPlatforms) GlobalScope.async {}.asPromise() else testWithEngine(Js) {
         withTimeout(30 * 1000) {
