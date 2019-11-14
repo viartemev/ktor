@@ -30,6 +30,8 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         )
     }
 
+    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+
     /**
      * Cache that keeps least recently used [HTTP2Client] instances.
      */
@@ -58,7 +60,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
             name = "ktor-jetty-client-qtp"
         }
 
-        setupTimeoutAttributes(attributes.getOrNull(HttpTimeout.Configuration.key))
+        setupTimeoutAttributes(attributes.getExtension(HttpTimeout.Configuration.Extension))
 
         start()
     }

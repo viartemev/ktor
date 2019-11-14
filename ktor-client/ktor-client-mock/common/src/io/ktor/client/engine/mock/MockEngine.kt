@@ -5,6 +5,7 @@
 package io.ktor.client.engine.mock
 
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
 
@@ -13,6 +14,7 @@ import kotlinx.coroutines.*
  */
 class MockEngine(override val config: MockEngineConfig) : HttpClientEngineBase("ktor-mock") {
     override val dispatcher = Dispatchers.Unconfined
+    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
     private var invocationCount = 0
     private val _requestsHistory: MutableList<HttpRequestData> = mutableListOf()
     private val _responseHistory: MutableList<HttpResponseData> = mutableListOf()

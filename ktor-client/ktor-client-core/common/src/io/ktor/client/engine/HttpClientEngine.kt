@@ -6,6 +6,7 @@ package io.ktor.client.engine
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.*
@@ -30,6 +31,11 @@ interface HttpClientEngine : CoroutineScope, Closeable {
      * Engine configuration
      */
     val config: HttpClientEngineConfig
+
+    /**
+     * Set of supported engine extensions.
+     */
+    val supportedExtensions: Set<HttpClientEngineExtension<*>>
 
     private val closed: Boolean
         get() = !(coroutineContext[Job]?.isActive ?: false)
@@ -63,6 +69,7 @@ interface HttpClientEngine : CoroutineScope, Closeable {
             }.build()
 
             validateHeaders(requestData)
+            // checkExtensions(requestData.attributes)
 
             val responseData = executeWithinCallContext(requestData)
             val call = HttpClientCall(client, requestData, responseData)
@@ -84,6 +91,12 @@ interface HttpClientEngine : CoroutineScope, Closeable {
 
             execute(requestData)
         }.await()
+    }
+
+    private fun checkExtensions(attributes: Attributes) {
+        for (requestedExtension in attributes.getAllExtensions()) {
+            require(supportedExtensions.contains(requestedExtension)) { "Engine doesn't support $requestedExtension" }
+        }
     }
 
     /**

@@ -25,6 +25,8 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
     // TODO: replace with UI dispatcher
     override val dispatcher = Dispatchers.Unconfined
 
+    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
 
@@ -142,7 +144,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
  */
 private fun NSMutableURLRequest.setupSocketTimeout(attributes: Attributes) {
     // iOS timeout works like a socket timeout.
-    attributes.getOrNull(HttpTimeout.Configuration.key)?.socketTimeout?.let {
+    attributes.getExtension(HttpTimeout.Configuration.Extension)?.socketTimeout?.let {
         // Timeout should be specified in seconds.
         setTimeoutInterval(it / 1000.0)
     }

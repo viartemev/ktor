@@ -6,6 +6,7 @@ package io.ktor.client.engine.android
 
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
@@ -30,6 +31,8 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
             "ktor-android-thread-%d"
         )
     }
+
+    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
@@ -80,7 +83,7 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
         connection.timeoutAwareConnect()
 
         val statusCode = HttpStatusCode(connection.responseCode, connection.responseMessage)
-        val content: ByteReadChannel = connection.content(callContext)
+        val content: ByteReadChannel = connection.content(CoroutineScope(callContext))
         val headerFields: MutableMap<String?, MutableList<String>> = connection.headerFields
         val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 
