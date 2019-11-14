@@ -39,6 +39,8 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         )
     }
 
+    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+
     private val engine: OkHttpClient = config.preconfigured ?: run {
         val builder = OkHttpClient.Builder()
         builder.apply(config.config)
@@ -122,7 +124,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         return HttpResponseData(status, requestTime, headers, version, body, callContext)
     }
 
-    private fun createOkHttpClient(attributes: Attributes) = attributes.getOrNull(HttpTimeout.Configuration.key)?.let {
+    private fun createOkHttpClient(attributes: Attributes) = attributes.getExtension(HttpTimeout.Configuration)?.let {
         engine.newBuilder()
             .setupTimeoutAttributes(it)
             .build()

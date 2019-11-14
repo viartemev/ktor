@@ -6,6 +6,7 @@ package io.ktor.server.testing.client
 
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.content.*
 import io.ktor.http.*
@@ -21,6 +22,8 @@ import kotlin.coroutines.*
 class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClientEngineBase("ktor-test") {
 
     override val dispatcher = Dispatchers.IO
+
+    override val supportedExtensions: Set<HttpClientEngineExtension<*>> = emptySet()
 
     private val app: TestApplicationEngine = config.app
 

@@ -28,28 +28,38 @@ class HttpTimeout(
     ) {
         internal fun build(): HttpTimeout = HttpTimeout(requestTimeout, connectTimeout, socketTimeout)
 
-        companion object {
-            val key = AttributeKey<Configuration>("Timeout")
+        companion object Extension : HttpClientEngineExtension<Configuration> {
+
+            val key = AttributeKey<Configuration>("TimeoutConfiguration")
+
+            override fun getExtensionConfiguration(attributes: Attributes): Configuration? = attributes.getOrNull(key)
         }
     }
+
+    /**
+     * Utils method that return true if at least one timeout is configured (has not null value).
+     */
+    private fun hasNotNullTimeouts() = requestTimeout != null || connectTimeout != null || socketTimeout != null
 
     /**
      * Companion object for feature installation.
      */
     companion object Feature : HttpClientFeature<Configuration, HttpTimeout> {
 
-        override val key: AttributeKey<HttpTimeout> = AttributeKey("Timeout")
+        override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
         override fun prepare(block: Configuration.() -> Unit): HttpTimeout = Configuration().apply(block).build()
 
         @UseExperimental(InternalCoroutinesApi::class)
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
-                if (!context.attributes.contains(Configuration.key)) {
-                    context.attributes.put(Configuration.key, Configuration())
+                var configuration = context.attributes.getExtension(Configuration.Extension)
+                if (configuration == null && feature.hasNotNullTimeouts()) {
+                    configuration = Configuration()
+                    context.attributes.putExtension(Configuration.Extension, configuration)
                 }
 
-                context.attributes[Configuration.key].apply {
+                configuration?.apply {
                     connectTimeout = connectTimeout ?: feature.connectTimeout
                     socketTimeout = socketTimeout ?: feature.socketTimeout
                     requestTimeout = requestTimeout ?: feature.requestTimeout
@@ -57,13 +67,13 @@ class HttpTimeout(
                     val requestTimeout = requestTimeout ?: feature.requestTimeout
                     if (requestTimeout == null || requestTimeout == 0L) return@apply
 
-                    val executionContext = context.executionContext!!
+                    val executionContext = context.executionContext
                     val killer = GlobalScope.launch {
                         delay(requestTimeout)
                         executionContext.cancel(HttpRequestTimeoutException())
                     }
 
-                    context.executionContext!!.invokeOnCompletion {
+                    context.executionContext.invokeOnCompletion {
                         killer.cancel()
                     }
                 }
