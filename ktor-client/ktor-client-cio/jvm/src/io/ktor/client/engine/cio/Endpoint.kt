@@ -6,7 +6,6 @@ package io.ktor.client.engine.cio
 
 import io.ktor.client.features.*
 import io.ktor.client.request.*
-import io.ktor.client.utils.*
 import io.ktor.network.sockets.*
 import io.ktor.network.sockets.Socket
 import io.ktor.network.tls.*
@@ -19,9 +18,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.io.*
 import java.net.*
-import java.net.SocketTimeoutException
 import java.nio.channels.*
 import kotlin.coroutines.*
+import kotlin.system.*
 
 internal class Endpoint(
     private val host: String,
@@ -93,10 +92,19 @@ internal class Endpoint(
         val (request, response, callContext) = task
         try {
             val connection = connect(request.attributes)
-            val input = mapEngineExceptions(connection.openReadChannel())
-//            val input = connection.openReadChannel().withSocketTimeoutExceptionMapping()
-            val output = connection.openWriteChannel()
+            val input = this@Endpoint.mapEngineExceptions(connection.openReadChannel())
+            val output = this@Endpoint.mapEngineExceptions(connection.openWriteChannel())
             val requestTime = GMTDate()
+
+            callContext[Job]!!.invokeOnCompletion { cause ->
+                try {
+                    input.cancel(cause)
+                    output.close(cause)
+                    connection.close()
+                    releaseConnection()
+                } catch (_: Throwable) {
+                }
+            }
 
             val timeout = config.requestTimeout
             val responseData = if (timeout == 0L) {
@@ -106,16 +114,6 @@ internal class Endpoint(
                 withTimeout(timeout) {
                     request.write(output, callContext, overProxy)
                     readResponse(requestTime, request, input, output, callContext)
-                }
-            }
-
-            callContext[Job]!!.invokeOnCompletion { cause ->
-                try {
-                    input.cancel(cause)
-                    output.close(cause)
-                    connection.close()
-                    releaseConnection()
-                } catch (_: Throwable) {
                 }
             }
 
@@ -250,20 +248,3 @@ open class ConnectException : Exception("Connect timed out or retry attempts exc
 @Suppress("KDocMissingDocumentation")
 @KtorExperimentalAPI
 class FailToConnectException : Exception("Connect timed out or retry attempts exceeded")
-
-/**
- * Returns [ByteReadChannel] with [ByteChannel.close] handler that returns [HttpSocketTimeoutException] instead of
- * [SocketTimeoutException].
- */
-private fun CoroutineScope.mapEngineExceptions(input: ByteReadChannel): ByteReadChannel = writer {
-    try {
-        input.joinTo(channel, false)
-    } catch (cause: Throwable) {
-        val mappedCause = when (cause.rootCause) {
-            is SocketTimeoutException -> HttpSocketTimeoutException()
-            else -> cause
-        }
-
-        channel.close(mappedCause)
-    }
-}.channel

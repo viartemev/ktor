@@ -69,23 +69,3 @@ internal fun HttpURLConnection.content(callScope: CoroutineScope): ByteReadChann
     context = callScope.coroutineContext,
     pool = KtorDefaultPool
 )?.let { callScope.mapEngineExceptions(it) } ?: ByteReadChannel.Empty
-
-/**
- * Returns [ByteReadChannel] with [ByteChannel.close] handler that returns [HttpSocketTimeoutException] instead of
- * [SocketTimeoutException].
- */
-private fun CoroutineScope.mapEngineExceptions(input: ByteReadChannel): ByteReadChannel = writer {
-    try {
-        input.joinTo(channel, false)
-        try {
-            input.readByte() // TODO: by some reason we don't get a timeout exception in joinTo()
-        } catch (_: ClosedReceiveChannelException) {}
-    } catch (cause: Throwable) {
-        val mappedCause = when (cause.rootCause) {
-            is SocketTimeoutException -> HttpSocketTimeoutException()
-            else -> cause
-        }
-
-        channel.close(mappedCause)
-    }
-}.channel
