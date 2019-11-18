@@ -30,6 +30,6 @@ internal data class ConnectionResponseTask(
  * Return true if request task contains timeout attributes specified using [HttpTimeout] feature.
  */
 private fun RequestTask.containsCustomTimeouts() =
-    request.getExtension<HttpTimeout.Configuration>()?.let {
+    request.getExtensionOrNull(HttpTimeout.Extension.key)?.let {
         it.connectTimeout != null || it.socketTimeout != null
     } == true

@@ -15,8 +15,7 @@ import kotlin.coroutines.*
  */
 class MockEngine(override val config: MockEngineConfig) : HttpClientEngineBase("ktor-mock") {
     override val dispatcher = Dispatchers.Unconfined
-    @UseExperimental(ExperimentalStdlibApi::class)
-    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
+    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
     private var invocationCount = 0
     private val _requestsHistory: MutableList<HttpRequestData> = mutableListOf()
     private val _responseHistory: MutableList<HttpResponseData> = mutableListOf()

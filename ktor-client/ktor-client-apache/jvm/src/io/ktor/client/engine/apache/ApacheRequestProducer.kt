@@ -11,7 +11,6 @@ import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.util.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -194,7 +193,7 @@ internal class ApacheRequestProducer(
 }
 
 private fun RequestConfig.Builder.setupTimeoutAttributes(requestData: HttpRequestData): RequestConfig.Builder = also {
-    requestData.getExtension<HttpTimeout.Configuration>()?.let { timeoutAttributes ->
+    requestData.getExtensionOrNull(HttpTimeout.Extension.key)?.let { timeoutAttributes ->
         timeoutAttributes.connectTimeout?.let { setConnectTimeout(it.toInt()) }
         timeoutAttributes.socketTimeout?.let { setSocketTimeout(it.toInt()) }
     }

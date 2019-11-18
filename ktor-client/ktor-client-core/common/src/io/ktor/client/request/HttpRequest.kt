@@ -13,7 +13,6 @@ import io.ktor.util.*
 import io.ktor.util.date.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.reflect.*
 
 /**
  * A request for [HttpClient], first part of [HttpClientCall].
@@ -95,8 +94,7 @@ class HttpRequestBuilder : HttpMessageBuilder {
     /**
      * Request extensions.
      */
-    @KtorExperimentalAPI
-    val extensions: MutableMap<KType, HttpRequestExtension> = mutableMapOf()
+    private val extensions: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
 
     /**
      * Executes a [block] that configures the [URLBuilder] associated to this request.
@@ -144,27 +142,21 @@ class HttpRequestBuilder : HttpMessageBuilder {
      * Retrieve extension by it's type.
      */
     @KtorExperimentalAPI
-    @UseExperimental(ExperimentalStdlibApi::class)
-    inline fun <reified T : HttpRequestExtension> setExtension(extension: T) {
-        extensions[typeOf<T>()] = extension
+    fun <T : Any> setExtension(key: AttributeKey<T>, extension: T) {
+        extensions[key] = extension
     }
 
     /**
      * Add extension to the request.
      */
     @KtorExperimentalAPI
-    @UseExperimental(ExperimentalStdlibApi::class)
-    inline fun <reified T : HttpRequestExtension> getExtensionOrNull(): T? {
-        return extensions[typeOf<T>()] as T?
+    fun <T : Any> getExtensionOrNull(key: AttributeKey<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        return extensions[key] as T?
     }
 
     companion object
 }
-
-/**
- * Base interface for all request extensions.
- */
-interface HttpRequestExtension
 
 /**
  * Actual data of the [HttpRequest], including [url], [method], [headers], [body] and [executionContext].
@@ -177,17 +169,21 @@ class HttpRequestData internal constructor(
     val body: OutgoingContent,
     val executionContext: Job,
     val attributes: Attributes,
-    @KtorExperimentalAPI
-    val extensions: Map<KType, HttpRequestExtension>
+    private val extensions: Map<AttributeKey<*>, Any>
 ) {
     /**
      * Retrieve extension by it's type.
      */
     @KtorExperimentalAPI
-    @UseExperimental(ExperimentalStdlibApi::class)
-    inline fun <reified T : HttpRequestExtension> getExtension(): T? {
-        return extensions[typeOf<T>()] as T?
+    fun <T> getExtensionOrNull(key: AttributeKey<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        return extensions[key] as T?
     }
+
+    /**
+     * Retrieve all extension keys associated with this request.
+     */
+    internal fun getExtensionKeys(): Set<AttributeKey<*>> = extensions.keys
 
     override fun toString(): String = "HttpRequestData(url=$url, method=$method)"
 }

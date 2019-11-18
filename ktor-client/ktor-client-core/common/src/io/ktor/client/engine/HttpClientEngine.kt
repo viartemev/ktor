@@ -36,7 +36,7 @@ interface HttpClientEngine : CoroutineScope, Closeable {
      * Set of supported engine extensions.
      */
     @KtorExperimentalAPI
-    val supportedExtensions: Set<KType>
+    val supportedExtensions: Set<AttributeKey<*>>
 
     private val closed: Boolean
         get() = !(coroutineContext[Job]?.isActive ?: false)
@@ -95,7 +95,7 @@ interface HttpClientEngine : CoroutineScope, Closeable {
     }
 
     private fun checkExtensions(requestData: HttpRequestData) {
-        for (requestedExtension in requestData.extensions.keys) {
+        for (requestedExtension in requestData.getExtensionKeys()) {
             require(supportedExtensions.contains(requestedExtension)) { "Engine doesn't support $requestedExtension" }
         }
     }

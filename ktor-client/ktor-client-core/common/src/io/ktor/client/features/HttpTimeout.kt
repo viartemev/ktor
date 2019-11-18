@@ -20,18 +20,18 @@ class HttpTimeout(
     private val socketTimeout: Long?
 ) {
     /**
-     * [HttpTimeout] configuration that is used during installation.
+     * [HttpTimeout] extension configuration that is used during installation.
      */
-    class Configuration(
+    class Extension(
         var requestTimeout: Long? = null,
         var connectTimeout: Long? = null,
         var socketTimeout: Long? = null
-    ) : HttpRequestExtension {
+    ) {
         internal fun build(): HttpTimeout = HttpTimeout(requestTimeout, connectTimeout, socketTimeout)
 
         companion object {
             @SharedImmutable
-            val key = AttributeKey<Configuration>("TimeoutConfiguration")
+            val key = AttributeKey<Extension>("TimeoutConfiguration")
         }
     }
 
@@ -43,19 +43,18 @@ class HttpTimeout(
     /**
      * Companion object for feature installation.
      */
-    companion object Feature : HttpClientFeature<Configuration, HttpTimeout> {
+    companion object Feature : HttpClientFeature<Extension, HttpTimeout> {
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
-        override fun prepare(block: Configuration.() -> Unit): HttpTimeout = Configuration().apply(block).build()
+        override fun prepare(block: Extension.() -> Unit): HttpTimeout = Extension().apply(block).build()
 
-        @UseExperimental(InternalCoroutinesApi::class)
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
-                var configuration = context.getExtensionOrNull<Configuration>()
+                var configuration = context.getExtensionOrNull(Extension.key)
                 if (configuration == null && feature.hasNotNullTimeouts()) {
-                    configuration = Configuration()
-                    context.setExtension(configuration)
+                    configuration = Extension()
+                    context.setExtension(Extension.key, configuration)
                 }
 
                 configuration?.apply {

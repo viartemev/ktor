@@ -6,17 +6,14 @@ package io.ktor.server.testing.client
 
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
-import io.ktor.client.features.*
 import io.ktor.client.request.*
-import io.ktor.http.content.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
 import io.ktor.util.date.*
-import kotlinx.coroutines.*
 import io.ktor.utils.io.*
-import kotlin.coroutines.*
-import kotlin.reflect.*
+import kotlinx.coroutines.*
 
 @Suppress("KDocMissingDocumentation")
 @KtorExperimentalAPI
@@ -24,7 +21,7 @@ class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClie
 
     override val dispatcher = Dispatchers.IO
 
-    override val supportedExtensions: Set<KType> = emptySet()
+    override val supportedExtensions = emptySet<AttributeKey<*>>()
 
     private val app: TestApplicationEngine = config.app
 
