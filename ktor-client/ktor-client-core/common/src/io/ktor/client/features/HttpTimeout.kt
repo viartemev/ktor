@@ -7,6 +7,7 @@ package io.ktor.client.features
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.util.*
+import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 
@@ -88,9 +89,9 @@ class HttpRequestTimeoutException : CancellationException("Request timeout has b
 /**
  * This exception is thrown in case connect timeout exceeded.
  */
-expect class HttpConnectTimeoutException : Throwable
+expect class HttpConnectTimeoutException : IOException
 
 /**
  * This exception is thrown in case socket timeout exceeded.
  */
-expect class HttpSocketTimeoutException : Throwable
+expect class HttpSocketTimeoutException : IOException

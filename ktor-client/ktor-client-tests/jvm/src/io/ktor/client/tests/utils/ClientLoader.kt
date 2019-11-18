@@ -32,7 +32,7 @@ actual abstract class ClientLoader {
         skipEngines: List<String>,
         block: suspend TestClientBuilder<HttpClientEngineConfig>.() -> Unit
     ) {
-        if (skipEngines.contains(engine.factory::class.simpleName)) return
+        if (skipEngines.contains(engine.toString())) return
         testWithEngine(engine.factory, block)
     }
 
