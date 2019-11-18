@@ -270,7 +270,7 @@ actual suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel, limit: Long): L
     require(limit >= 0L)
 
     if (this is ByteBufferChannel && dst is ByteBufferChannel) {
-        return dst.copyDirect(this, limit, true, null)
+        return dst.copyDirect(this, limit, null)
     } else if (this is ByteChannelSequentialBase && dst is ByteChannelSequentialBase) {
         return copyToSequentialImpl(dst, Long.MAX_VALUE) // more specialized extension function
     }

@@ -16,6 +16,7 @@ import io.ktor.util.date.*
 import kotlinx.coroutines.*
 import io.ktor.utils.io.*
 import kotlin.coroutines.*
+import kotlin.reflect.*
 
 @Suppress("KDocMissingDocumentation")
 @KtorExperimentalAPI
@@ -23,7 +24,7 @@ class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClie
 
     override val dispatcher = Dispatchers.IO
 
-    override val supportedExtensions: Set<HttpClientEngineExtension<*>> = emptySet()
+    override val supportedExtensions: Set<KType> = emptySet()
 
     private val app: TestApplicationEngine = config.app
 

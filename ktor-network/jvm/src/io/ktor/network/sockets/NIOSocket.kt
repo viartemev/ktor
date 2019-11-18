@@ -112,7 +112,6 @@ internal abstract class NIOSocketImpl<out S>(
         }
     }
 
-    @UseExperimental(InternalCoroutinesApi::class)
     private fun checkChannels() {
         if (closeFlag.get() && readerJob.completedOrNotStarted && writerJob.completedOrNotStarted) {
             val e1 = readerJob.exception

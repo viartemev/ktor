@@ -1290,7 +1290,7 @@ internal class ByteBufferChannel(
     }
 
     private suspend fun joinFromSuspend(src: ByteBufferChannel, delegateClose: Boolean, joined: JoiningState) {
-        copyDirect(src, Long.MAX_VALUE, delegateClose, joined)
+        copyDirect(src, Long.MAX_VALUE, joined)
 
         if (delegateClose && src.isClosedForRead) {
             close()
@@ -1300,12 +1300,7 @@ internal class ByteBufferChannel(
         }
     }
 
-    internal suspend fun copyDirect(
-        src: ByteBufferChannel,
-        limit: Long,
-        delegateClose: Boolean,
-        joined: JoiningState?
-    ): Long {
+    internal suspend fun copyDirect(src: ByteBufferChannel, limit: Long, joined: JoiningState?): Long {
         if (limit == 0L) return 0L
         if (src.isClosedForRead) {
             if (joined != null) {
@@ -1404,9 +1399,7 @@ internal class ByteBufferChannel(
 
             return copied
         } catch (t: Throwable) {
-            if (delegateClose) {
-                close(t)
-            }
+            close(t)
             throw t
         }
     }

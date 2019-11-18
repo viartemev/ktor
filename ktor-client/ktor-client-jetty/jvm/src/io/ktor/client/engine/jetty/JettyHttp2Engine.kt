@@ -12,9 +12,7 @@ import io.ktor.util.*
 import kotlinx.coroutines.*
 import org.eclipse.jetty.http2.client.*
 import org.eclipse.jetty.util.thread.*
-import java.util.*
-import java.util.LinkedHashMap
-import javax.management.*
+import kotlin.reflect.*
 
 /**
  * Size of the cache that keeps least recently used [HTTP2Client] instances.
@@ -30,7 +28,8 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     /**
      * Cache that keeps least recently used [HTTP2Client] instances.
@@ -39,7 +38,8 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
-        val jettyClient = clientCache[data.attributes] ?: error("Http2Client can't be constructed")
+        val jettyClient =
+            clientCache[data.getExtension<HttpTimeout.Configuration>()] ?: error("Http2Client can't be constructed")
 
         return data.executeRequest(jettyClient, config, callContext)
     }
@@ -52,7 +52,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         }
     }
 
-    private fun createJettyClient(attributes: Attributes): HTTP2Client = HTTP2Client().apply {
+    private fun createJettyClient(timeoutExtension: HttpTimeout.Configuration?): HTTP2Client = HTTP2Client().apply {
         addBean(config.sslContextFactory)
         check(config.proxy == null) { "Proxy unsupported in Jetty engine." }
 
@@ -60,7 +60,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
             name = "ktor-jetty-client-qtp"
         }
 
-        setupTimeoutAttributes(attributes.getExtension(HttpTimeout.Configuration.Extension))
+        setupTimeoutAttributes(timeoutExtension)
 
         start()
     }

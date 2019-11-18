@@ -22,6 +22,7 @@ import java.io.*
 import java.net.*
 import java.util.concurrent.*
 import kotlin.coroutines.*
+import kotlin.reflect.*
 
 /**
  * Size of the cache that keeps least recently used [OkHttpClient] instances.
@@ -39,7 +40,8 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     private val engine: OkHttpClient = config.preconfigured ?: run {
         val builder = OkHttpClient.Builder()
@@ -58,7 +60,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         val callContext = callContext()
         val engineRequest = data.convertToOkHttpRequest(callContext)
 
-        val requestEngine = clientCache[data.attributes] ?: error("OkHttpClient can't be constructed")
+        val requestEngine = clientCache[data.getExtension()] ?: error("OkHttpClient can't be constructed")
 
         return if (data.isUpgradeRequest()) {
             executeWebSocketRequest(requestEngine, engineRequest, callContext)
@@ -124,7 +126,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         return HttpResponseData(status, requestTime, headers, version, body, callContext)
     }
 
-    private fun createOkHttpClient(attributes: Attributes) = attributes.getExtension(HttpTimeout.Configuration)?.let {
+    private fun createOkHttpClient(timeoutExtension: HttpTimeout.Configuration?) = timeoutExtension?.let {
         engine.newBuilder()
             .setupTimeoutAttributes(it)
             .build()

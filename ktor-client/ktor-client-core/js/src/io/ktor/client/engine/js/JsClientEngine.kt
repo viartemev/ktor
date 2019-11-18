@@ -18,12 +18,14 @@ import kotlinx.coroutines.*
 import org.w3c.dom.*
 import org.w3c.dom.events.*
 import kotlin.coroutines.*
+import kotlin.reflect.*
 
 internal class JsClientEngine(override val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor-js") {
 
     override val dispatcher = Dispatchers.Default
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     init {
         check(config.proxy == null) { "Proxy unsupported in Js engine." }

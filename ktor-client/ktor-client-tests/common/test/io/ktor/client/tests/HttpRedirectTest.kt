@@ -10,9 +10,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
 import io.ktor.http.*
-import io.ktor.util.*
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.*
 import kotlin.test.*
 
 class HttpRedirectTest : ClientLoader() {
@@ -64,9 +62,9 @@ class HttpRedirectTest : ClientLoader() {
     @Test
     fun testCustomUrls() = clientTests {
         val urls = listOf(
-            "https://files.forgecdn.net/files/2574/880/BiblioCraft[v2.4.5][MC1.12.2].jar"
-//            "https://files.forgecdn.net/files/2611/560/Botania r1.10-356.jar",
-//            "https://files.forgecdn.net/files/2613/730/Toast Control-1.12.2-1.7.1.jar"
+            "https://files.forgecdn.net/files/2574/880/BiblioCraft[v2.4.5][MC1.12.2].jar",
+            "https://files.forgecdn.net/files/2611/560/Botania r1.10-356.jar",
+            "https://files.forgecdn.net/files/2613/730/Toast Control-1.12.2-1.7.1.jar"
         )
 
         config {
@@ -80,8 +78,6 @@ class HttpRedirectTest : ClientLoader() {
                     assertTrue(it.status.isSuccess(), url)
                 }
             }
-
-            client.coroutineContext[Job]!!.printDebugTree()
         }
     }
 

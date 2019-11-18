@@ -13,6 +13,7 @@ import io.ktor.util.*
 import io.ktor.util.date.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.reflect.*
 
 /**
  * A request for [HttpClient], first part of [HttpClientCall].
@@ -84,11 +85,18 @@ class HttpRequestBuilder : HttpMessageBuilder {
      */
     @KtorExperimentalAPI
     var executionContext: Job = Job()
+        internal set
 
     /**
      * Call specific attributes.
      */
     val attributes: Attributes = Attributes(concurrent = true)
+
+    /**
+     * Request extensions.
+     */
+    @KtorExperimentalAPI
+    val extensions: MutableMap<KType, HttpRequestExtension> = mutableMapOf()
 
     /**
      * Executes a [block] that configures the [URLBuilder] associated to this request.
@@ -101,7 +109,7 @@ class HttpRequestBuilder : HttpMessageBuilder {
     fun build(): HttpRequestData = HttpRequestData(
         url.build(), method, headers.build(),
         body as? OutgoingContent ?: error("No request transformation found: $body"),
-        executionContext!!, attributes
+        executionContext, attributes, extensions
     )
 
     /**
@@ -125,12 +133,38 @@ class HttpRequestBuilder : HttpMessageBuilder {
             @Suppress("UNCHECKED_CAST")
             attributes.put(it as AttributeKey<Any>, builder.attributes[it])
         }
+        builder.extensions.forEach { (key, value) ->
+            extensions[key] = value
+        }
 
         return this
     }
 
+    /**
+     * Retrieve extension by it's type.
+     */
+    @KtorExperimentalAPI
+    @UseExperimental(ExperimentalStdlibApi::class)
+    inline fun <reified T : HttpRequestExtension> setExtension(extension: T) {
+        extensions[typeOf<T>()] = extension
+    }
+
+    /**
+     * Add extension to the request.
+     */
+    @KtorExperimentalAPI
+    @UseExperimental(ExperimentalStdlibApi::class)
+    inline fun <reified T : HttpRequestExtension> getExtensionOrNull(): T? {
+        return extensions[typeOf<T>()] as T?
+    }
+
     companion object
 }
+
+/**
+ * Base interface for all request extensions.
+ */
+interface HttpRequestExtension
 
 /**
  * Actual data of the [HttpRequest], including [url], [method], [headers], [body] and [executionContext].
@@ -142,8 +176,19 @@ class HttpRequestData internal constructor(
     val headers: Headers,
     val body: OutgoingContent,
     val executionContext: Job,
-    val attributes: Attributes
+    val attributes: Attributes,
+    @KtorExperimentalAPI
+    val extensions: Map<KType, HttpRequestExtension>
 ) {
+    /**
+     * Retrieve extension by it's type.
+     */
+    @KtorExperimentalAPI
+    @UseExperimental(ExperimentalStdlibApi::class)
+    inline fun <reified T : HttpRequestExtension> getExtension(): T? {
+        return extensions[typeOf<T>()] as T?
+    }
+
     override fun toString(): String = "HttpRequestData(url=$url, method=$method)"
 }
 

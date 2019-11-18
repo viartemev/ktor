@@ -19,6 +19,7 @@ import java.io.*
 import java.net.*
 import javax.net.ssl.*
 import kotlin.coroutines.*
+import kotlin.reflect.*
 
 /**
  * Android client engine
@@ -32,7 +33,8 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
@@ -48,7 +50,7 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
             connectTimeout = config.connectTimeout
             readTimeout = config.socketTimeout
 
-            setupTimeoutAttributes(data.attributes)
+            setupTimeoutAttributes(data)
 
             if (this is HttpsURLConnection) {
                 config.sslManager(this)
@@ -83,7 +85,7 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
         connection.timeoutAwareConnect()
 
         val statusCode = HttpStatusCode(connection.responseCode, connection.responseMessage)
-        val content: ByteReadChannel = connection.content(CoroutineScope(callContext))
+        val content: ByteReadChannel = connection.content(callContext)
         val headerFields: MutableMap<String?, MutableList<String>> = connection.headerFields
         val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 

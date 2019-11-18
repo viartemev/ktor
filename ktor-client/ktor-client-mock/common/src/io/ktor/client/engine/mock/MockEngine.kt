@@ -8,13 +8,15 @@ import io.ktor.client.engine.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 /**
  * [HttpClientEngine] for writing tests without network.
  */
 class MockEngine(override val config: MockEngineConfig) : HttpClientEngineBase("ktor-mock") {
     override val dispatcher = Dispatchers.Unconfined
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
     private var invocationCount = 0
     private val _requestsHistory: MutableList<HttpRequestData> = mutableListOf()
     private val _responseHistory: MutableList<HttpResponseData> = mutableListOf()

@@ -8,6 +8,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.util.*
 import kotlinx.coroutines.*
+import kotlin.native.concurrent.*
 
 /**
  * Client HTTP timeout feature. There are no default values, so default timeouts will be taken from engine configuration
@@ -25,14 +26,12 @@ class HttpTimeout(
         var requestTimeout: Long? = null,
         var connectTimeout: Long? = null,
         var socketTimeout: Long? = null
-    ) {
+    ) : HttpRequestExtension {
         internal fun build(): HttpTimeout = HttpTimeout(requestTimeout, connectTimeout, socketTimeout)
 
-        companion object Extension : HttpClientEngineExtension<Configuration> {
-
+        companion object {
+            @SharedImmutable
             val key = AttributeKey<Configuration>("TimeoutConfiguration")
-
-            override fun getExtensionConfiguration(attributes: Attributes): Configuration? = attributes.getOrNull(key)
         }
     }
 
@@ -53,10 +52,10 @@ class HttpTimeout(
         @UseExperimental(InternalCoroutinesApi::class)
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
-                var configuration = context.attributes.getExtension(Configuration.Extension)
+                var configuration = context.getExtensionOrNull<Configuration>()
                 if (configuration == null && feature.hasNotNullTimeouts()) {
                     configuration = Configuration()
-                    context.attributes.putExtension(Configuration.Extension, configuration)
+                    context.setExtension(configuration)
                 }
 
                 configuration?.apply {

@@ -7,6 +7,9 @@ package io.ktor.client.tests.utils
 import io.ktor.util.*
 import kotlin.test.*
 
+/**
+ * Check that [block] completed with given type of root cause.
+ */
 @InternalAPI
 actual inline fun <reified T : Throwable> assertFailsWithRootCause(block: () -> Unit) {
     var cause = assertFails(block)
