@@ -19,7 +19,6 @@ import java.io.*
 import java.net.*
 import javax.net.ssl.*
 import kotlin.coroutines.*
-import kotlin.reflect.*
 
 /**
  * Android client engine
@@ -33,8 +32,7 @@ class AndroidClientEngine(override val config: AndroidEngineConfig) : HttpClient
         )
     }
 
-    @UseExperimental(ExperimentalStdlibApi::class)
-    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
+    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()

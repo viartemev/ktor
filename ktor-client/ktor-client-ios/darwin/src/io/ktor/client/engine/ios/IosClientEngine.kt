@@ -20,14 +20,12 @@ import kotlinx.coroutines.channels.*
 import platform.Foundation.*
 import platform.darwin.*
 import kotlin.coroutines.*
-import kotlin.reflect.*
 
 internal class IosClientEngine(override val config: IosClientEngineConfig) : HttpClientEngineBase("ktor-ios") {
     // TODO: replace with UI dispatcher
     override val dispatcher = Dispatchers.Unconfined
 
-    @UseExperimental(ExperimentalStdlibApi::class)
-    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
+    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
@@ -146,7 +144,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
  */
 private fun NSMutableURLRequest.setupSocketTimeout(requestData: HttpRequestData) {
     // iOS timeout works like a socket timeout.
-    requestData.getExtension<HttpTimeout.Configuration>()?.socketTimeout?.let {
+    requestData.getExtensionOrNull(HttpTimeout.Extension.key)?.socketTimeout?.let {
         // Timeout should be specified in seconds.
         setTimeoutInterval(it / 1000.0)
     }
