@@ -58,7 +58,6 @@ internal fun Application.timeoutTest() {
                     if (read == -1) break
                     cnt += read
                     if (cnt >= 1024 * 1024) {
-                        println("cnt = $cnt")
                         cnt = 0
                         delay(1000)
                     }

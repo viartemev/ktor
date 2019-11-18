@@ -8,7 +8,6 @@ import io.ktor.client.engine.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
 
 /**
  * [HttpClientEngine] for writing tests without network.

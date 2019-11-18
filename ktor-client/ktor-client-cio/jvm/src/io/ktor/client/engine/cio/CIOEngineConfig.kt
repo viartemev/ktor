@@ -70,7 +70,7 @@ class EndpointConfig {
     /**
      * Socket timeout in millis.
      */
-    val socketTimeout: Long = 10000
+    val socketTimeout: Long = 0
 
     /**
      * Maximum number of connection attempts.

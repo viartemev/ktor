@@ -21,7 +21,7 @@ internal fun CoroutineScope.attachForReadingImpl(
     selectable: Selectable,
     selector: SelectorManager,
     pool: ObjectPool<ByteBuffer>,
-    socketTimeout: Long
+    socketOptions: SocketOptions.TCPClientSocketOptions? = null
 ): WriterJob {
     val buffer = pool.borrow()
     return writer(Dispatchers.Unconfined + CoroutineName("cio-from-nio-reader"), channel) {
@@ -29,7 +29,7 @@ internal fun CoroutineScope.attachForReadingImpl(
             while (true) {
                 var rc = 0
 
-                withSocketTimeout(socketTimeout) {
+                withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
                     do {
                         rc = nioChannel.read(buffer)
                         if (rc == 0) {
@@ -68,7 +68,7 @@ internal fun CoroutineScope.attachForReadingDirectImpl(
     nioChannel: ReadableByteChannel,
     selectable: Selectable,
     selector: SelectorManager,
-    socketTimeout: Long
+    socketOptions: SocketOptions.TCPClientSocketOptions? = null
 ): WriterJob = writer(Dispatchers.Unconfined + CoroutineName("cio-from-nio-reader"), channel) {
     try {
         selectable.interestOp(SelectInterest.READ, false)
@@ -77,7 +77,7 @@ internal fun CoroutineScope.attachForReadingDirectImpl(
             while (true) {
                 var rc = 0
 
-                withSocketTimeout(socketTimeout) {
+                withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
                     do {
                         val buffer = request(1)
                         if (buffer == null) {

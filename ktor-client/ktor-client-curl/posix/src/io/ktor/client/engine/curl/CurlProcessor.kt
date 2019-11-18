@@ -37,22 +37,25 @@ internal class CurlProcessor(
 
         val easyHandle = worker.execute(TransferMode.SAFE, { request.freeze() }, ::curlSchedule).result
 
-        callContext[Job]!!.invokeOnCompletion { cause ->
+        val requestCleaner = callContext[Job]!!.invokeOnCompletion { cause ->
             if (cause == null) return@invokeOnCompletion
-            worker.execute(TransferMode.SAFE, { (easyHandle to cause).freeze() }) {
-                curlApi.cancelRequest(it.first, it.second)
+            cancelRequest(easyHandle, cause)
+        }
+
+        try {
+
+            activeRequests.incrementAndGet()
+
+            while (deferred.isActive) {
+                val completedResponses = poll()
+                while (completedResponses.state == FutureState.SCHEDULED) delay(100)
+                processPoll(completedResponses.result)
             }
+
+            return deferred.await()
+        } finally {
+            requestCleaner.dispose()
         }
-
-        activeRequests.incrementAndGet()
-
-        while (deferred.isActive) {
-            val completedResponses = poll()
-            while (completedResponses.state == FutureState.SCHEDULED) delay(100)
-            processPoll(completedResponses.result)
-        }
-
-        return deferred.await()
     }
 
     fun close() {
@@ -73,6 +76,12 @@ internal class CurlProcessor(
         }
 
         activeRequests.update { it - result.size }
+    }
+
+    private fun cancelRequest(easyHandle: EasyHandle, cause: Throwable) {
+        worker.execute(TransferMode.SAFE, { (easyHandle to cause).freeze() }) {
+            curlApi.cancelRequest(it.first, it.second)
+        }
     }
 }
 

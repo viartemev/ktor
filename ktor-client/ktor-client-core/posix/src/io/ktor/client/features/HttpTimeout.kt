@@ -4,6 +4,8 @@
 
 package io.ktor.client.features
 
+import io.ktor.utils.io.errors.*
+
 /**
  * HTTP connect timeout exception.
  */
