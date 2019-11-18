@@ -7,8 +7,10 @@ package io.ktor.client.tests
 import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
 import io.ktor.http.*
+import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlin.test.*
 
@@ -60,8 +62,10 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val call = client.call("$TEST_SERVER/timeout/with-delay?delay=10") { method = HttpMethod.Get }
-            val res: String = call.receive()
+            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay?delay=10") {
+                method = HttpMethod.Get
+            }
+            val res: String = response.receive()
 
             assertEquals("Text", res)
         }
@@ -74,43 +78,45 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val call = client.call("$TEST_SERVER/timeout/with-delay?delay=10") {
+            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay?delay=10") {
                 method = HttpMethod.Get
                 setExtension(HttpTimeout.Extension.key, HttpTimeout.Extension(requestTimeout = 500))
             }
-            val res: String = call.receive()
+            val res: String = response.receive()
 
             assertEquals("Text", res)
         }
     }
 
     @Test
-    fun getRequestTimeoutWithSeparateReceiveTest() = clientTests(listOf("Curl", "Ios")) {
+    fun getRequestTimeoutWithSeparateReceiveTest() = clientTests(listOf("Curl", "Ios", "Js")) {
         config {
             install(HttpTimeout) { requestTimeout = 1000 }
         }
 
         test { client ->
-            val call = client.call("$TEST_SERVER/timeout/with-stream?delay=500") { method = HttpMethod.Get }
+            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream?delay=500") {
+                method = HttpMethod.Get
+            }
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                call.receive<String>()
+                response.readUTF8Line()
             }
         }
     }
 
     @Test
-    fun getRequestTimeoutWithSeparateReceivePerRequestAttributesTest() = clientTests(listOf("Curl", "Ios")) {
+    fun getRequestTimeoutWithSeparateReceivePerRequestAttributesTest() = clientTests(listOf("Curl", "Ios", "Js")) {
         config {
             install(HttpTimeout)
         }
 
         test { client ->
-            val call = client.call("$TEST_SERVER/timeout/with-stream?delay=500") {
+            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream?delay=500") {
                 method = HttpMethod.Get
                 setExtension(HttpTimeout.Extension.key, HttpTimeout.Extension(requestTimeout = 1000))
             }
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                call.receive<String>()
+                response.readUTF8Line()
             }
         }
     }

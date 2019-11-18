@@ -20,7 +20,10 @@ actual abstract class ClientLoader {
     ) {
         engines
             .filter {
-                it::class.simpleName !in skipEngines
+                it.first !in skipEngines
+            }
+            .map {
+                it.second
             }
             .forEach {
                 testWithEngine(it) {

@@ -20,7 +20,7 @@ internal fun CoroutineScope.attachForWritingImpl(
     selectable: Selectable,
     selector: SelectorManager,
     pool: ObjectPool<ByteBuffer>,
-    socketTimeout: Long = 0
+    socketOptions: SocketOptions.TCPClientSocketOptions? = null
 ): ReaderJob {
     val buffer = pool.borrow()
 
@@ -36,7 +36,7 @@ internal fun CoroutineScope.attachForWritingImpl(
                 while (buffer.hasRemaining()) {
                     var rc: Int
 
-                    withSocketTimeout(socketTimeout) {
+                    withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
                         do {
                             rc = nioChannel.write(buffer)
                             if (rc == 0) {
@@ -67,7 +67,7 @@ internal fun CoroutineScope.attachForWritingDirectImpl(
     nioChannel: WritableByteChannel,
     selectable: Selectable,
     selector: SelectorManager,
-    socketTimeout: Long
+    socketOptions: SocketOptions.TCPClientSocketOptions? = null
 ): ReaderJob = reader(Dispatchers.Unconfined + CoroutineName("cio-to-nio-writer"), channel) {
     selectable.interestOp(SelectInterest.WRITE, false)
     try {
@@ -83,7 +83,7 @@ internal fun CoroutineScope.attachForWritingDirectImpl(
                 while (buffer.hasRemaining()) {
                     var rc = 0
 
-                    withSocketTimeout(socketTimeout) {
+                    withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
                         do {
                             rc = nioChannel.write(buffer)
                             if (rc == 0) {

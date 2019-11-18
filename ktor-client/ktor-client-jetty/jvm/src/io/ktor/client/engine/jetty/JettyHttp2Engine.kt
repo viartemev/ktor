@@ -37,7 +37,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
         val jettyClient =
-            clientCache[data.getExtensionOrNull<HttpTimeout.Extension>()] ?: error("Http2Client can't be constructed")
+            clientCache[data.getExtensionOrNull(HttpTimeout.Extension.key)] ?: error("Http2Client can't be constructed")
 
         return data.executeRequest(jettyClient, config, callContext)
     }

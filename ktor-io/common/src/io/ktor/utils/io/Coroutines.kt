@@ -116,7 +116,7 @@ private fun <S : CoroutineScope> CoroutineScope.launchChannel(
     block: suspend S.() -> Unit
 ): ChannelJob {
 
-    val job = launch(context + coroutineContext) {
+    val job = launch(context) {
         if (attachJob) {
             channel.attachJob(coroutineContext[Job]!!)
         }

@@ -33,7 +33,7 @@ class RoutingBenchmark {
 
     @TearDown
     fun stopServer() {
-        testHost.stop(0L, 0L)
+        testHost.stop(0L, 0L, TimeUnit.MILLISECONDS)
     }
 
     @Benchmark

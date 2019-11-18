@@ -55,6 +55,21 @@ open class ByteChannelSmokeTest : ByteChannelTestBase() {
     }
 
     @Test
+    fun testReadLineFromExceptionallyClosedChannel() = runTest {
+        val bc = ByteChannel(true)
+        bc.writeStringUtf8("Test\n")
+        bc.flush()
+        bc.close(IllegalStateException("Something goes wrong"))
+
+        val exception = assertFails {
+            bc.readUTF8LineTo(StringBuilder(), 10)
+        }
+
+        assertTrue { exception is IllegalStateException }
+        assertEquals("Something goes wrong", exception.message)
+    }
+
+    @Test
     fun testBoolean() {
         runTest {
             ch.writeBoolean(true)

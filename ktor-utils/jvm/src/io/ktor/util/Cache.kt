@@ -16,6 +16,7 @@ fun <K, V> createLRUCache(supplier: (K) -> V, close: (V) -> Unit, maxSize: Int):
 /**
  * LRU cache based on [LinkedHashMap] with specified [maxSize] and [supplier].
  */
+@InternalAPI
 class LRUCache<K, V> internal constructor(
     private val supplier: (K) -> V,
     private val close: (V) -> Unit,

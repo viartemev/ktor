@@ -5,7 +5,6 @@
 package io.ktor.client.engine.js
 
 import io.ktor.client.engine.*
-import io.ktor.client.engine.js.compatible.*
 import io.ktor.client.features.*
 import io.ktor.client.engine.js.compatibility.*
 import io.ktor.client.features.websocket.*
