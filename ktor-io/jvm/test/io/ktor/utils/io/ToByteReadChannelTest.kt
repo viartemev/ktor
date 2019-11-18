@@ -72,7 +72,7 @@ class ToByteReadChannelTest {
     }
 
     companion object {
-        private val pool: ObjectPool<ByteBuffer> = object : DefaultPool<ByteBuffer>(10) {
+        private val pool = object : DefaultPool<ByteBuffer>(10) {
             override fun produceInstance(): ByteBuffer {
                 return ByteBuffer.allocate(4096)
             }
