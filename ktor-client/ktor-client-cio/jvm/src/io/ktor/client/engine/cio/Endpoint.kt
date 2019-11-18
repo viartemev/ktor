@@ -11,8 +11,6 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.tls.*
 import io.ktor.util.*
 import io.ktor.util.date.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.ByteChannel
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -20,7 +18,6 @@ import java.io.*
 import java.net.*
 import java.nio.channels.*
 import kotlin.coroutines.*
-import kotlin.system.*
 
 internal class Endpoint(
     private val host: String,
@@ -91,7 +88,7 @@ internal class Endpoint(
     ): Job = launch(task.context + CoroutineName("DedicatedRequest")) {
         val (request, response, callContext) = task
         try {
-            val connection = connect(request.attributes)
+            val connection = connect(request)
             val input = this@Endpoint.mapEngineExceptions(connection.openReadChannel())
             val output = this@Endpoint.mapEngineExceptions(connection.openWriteChannel())
             val requestTime = GMTDate()
@@ -137,9 +134,9 @@ internal class Endpoint(
         pipeline.pipelineContext.invokeOnCompletion { releaseConnection() }
     }
 
-    private suspend fun connect(attributes: Attributes? = null): Socket {
+    private suspend fun connect(requestData: HttpRequestData? = null): Socket {
         val retryAttempts = config.endpoint.connectRetryAttempts
-        val (connectTimeout, socketTimeout) = retrieveTimeouts(attributes)
+        val (connectTimeout, socketTimeout) = retrieveTimeouts(requestData)
         var timeoutFails = 0
 
         connections.incrementAndGet()
@@ -212,17 +209,12 @@ internal class Endpoint(
      * Take timeout attributes from [config] and [HttpTimeout.Configuration] stored in [attributes] and returns pair of
      * connect timeout and socket timeout to be applied.
      */
-    private fun retrieveTimeouts(attributes: Attributes?): Pair<Long, Long> {
-        if (attributes == null || attributes.getExtension(HttpTimeout.Configuration.Extension) == null) {
-            return config.endpoint.connectTimeout to config.endpoint.connectTimeout
-        }
-
-        return attributes.getExtension(HttpTimeout.Configuration.Extension)!!.let { timeoutAttributes ->
+    private fun retrieveTimeouts(requestData: HttpRequestData?): Pair<Long, Long> =
+        requestData?.getExtension<HttpTimeout.Configuration>()?.let { timeoutAttributes ->
             val socketTimeout = timeoutAttributes.socketTimeout ?: config.endpoint.socketTimeout
             val connectTimeout = timeoutAttributes.connectTimeout ?: config.endpoint.connectTimeout
             return connectTimeout to socketTimeout
-        }
-    }
+        } ?: config.endpoint.connectTimeout to config.endpoint.connectTimeout
 
     private fun releaseConnection() {
         connectionFactory.release()

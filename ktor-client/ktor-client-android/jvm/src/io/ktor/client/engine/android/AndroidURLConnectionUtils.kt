@@ -5,23 +5,20 @@
 package io.ktor.client.engine.android
 
 import io.ktor.client.features.*
-import io.ktor.client.utils.*
-import io.ktor.util.*
+import io.ktor.client.request.*
 import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
 import java.io.*
 import java.net.*
 import kotlin.coroutines.*
 
 /**
- * Setup [HttpURLConnection] timeout configuration using [HttpTimeout.Configuration] as a source. These attributes are
- * introduced by [HttpTimeout] client feature.
+ * Setup [HttpURLConnection] timeout configuration using [HttpTimeout.Configuration] as a source.
  */
-internal fun HttpURLConnection.setupTimeoutAttributes(attributes: Attributes) {
-    attributes.getExtension(HttpTimeout.Configuration.Extension)?.let { timeoutAttributes ->
+internal fun HttpURLConnection.setupTimeoutAttributes(requestData: HttpRequestData) {
+    requestData.getExtension<HttpTimeout.Configuration>()?.let { timeoutAttributes ->
         timeoutAttributes.connectTimeout?.let { connectTimeout = it.toInt() }
         timeoutAttributes.socketTimeout?.let { readTimeout = it.toInt() }
         setupRequestTimeoutAttributes(timeoutAttributes)
@@ -61,11 +58,14 @@ internal suspend fun HttpURLConnection.timeoutAwareConnect() {
     }
 }
 
-internal fun HttpURLConnection.content(callScope: CoroutineScope): ByteReadChannel = try {
+/**
+ * Establish connection and return correspondent [ByteReadChannel].
+ */
+internal fun HttpURLConnection.content(callContext: CoroutineContext): ByteReadChannel = try {
     inputStream?.buffered()
 } catch (_: IOException) {
     errorStream?.buffered()
 }?.toByteReadChannel(
-    context = callScope.coroutineContext,
+    context = callContext,
     pool = KtorDefaultPool
-)?.let { callScope.mapEngineExceptions(it) } ?: ByteReadChannel.Empty
+)?.let { CoroutineScope(callContext).mapEngineExceptions(it) } ?: ByteReadChannel.Empty

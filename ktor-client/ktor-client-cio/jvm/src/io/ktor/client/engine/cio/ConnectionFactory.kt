@@ -10,7 +10,6 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketOptions
 import kotlinx.coroutines.sync.*
 import java.net.*
-import kotlin.coroutines.*
 
 internal class ConnectionFactory(
     private val selector: SelectorManager,

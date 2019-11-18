@@ -15,12 +15,14 @@ import kotlinx.coroutines.channels.*
 import java.io.*
 import java.net.*
 import java.util.concurrent.*
+import kotlin.reflect.*
 
 internal class CIOEngine(override val config: CIOEngineConfig) : HttpClientEngineBase("ktor-cio") {
 
     override val dispatcher by lazy { Dispatchers.fixedThreadPoolDispatcher(config.threadsCount, "ktor-cio-thread-%d") }
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     private val endpoints = ConcurrentHashMap<String, Endpoint>()
 

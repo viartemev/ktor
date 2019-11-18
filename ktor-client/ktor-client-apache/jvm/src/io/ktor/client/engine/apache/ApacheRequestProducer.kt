@@ -150,7 +150,7 @@ internal class ApacheRequestProducer(
                 .setConnectTimeout(connectTimeout)
                 .setConnectionRequestTimeout(connectionRequestTimeout)
                 .customRequest()
-                .setupTimeoutAttributes(requestData.attributes)
+                .setupTimeoutAttributes(requestData)
                 .build()
         }
 
@@ -193,8 +193,8 @@ internal class ApacheRequestProducer(
     }
 }
 
-private fun RequestConfig.Builder.setupTimeoutAttributes(attributes: Attributes): RequestConfig.Builder = also {
-    attributes.getExtension(HttpTimeout.Configuration.Extension)?.let { timeoutAttributes ->
+private fun RequestConfig.Builder.setupTimeoutAttributes(requestData: HttpRequestData): RequestConfig.Builder = also {
+    requestData.getExtension<HttpTimeout.Configuration>()?.let { timeoutAttributes ->
         timeoutAttributes.connectTimeout?.let { setConnectTimeout(it.toInt()) }
         timeoutAttributes.socketTimeout?.let { setSocketTimeout(it.toInt()) }
     }

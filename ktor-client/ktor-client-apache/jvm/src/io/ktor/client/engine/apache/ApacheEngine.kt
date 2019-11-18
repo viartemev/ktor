@@ -13,6 +13,7 @@ import org.apache.http.*
 import org.apache.http.impl.nio.client.*
 import org.apache.http.impl.nio.reactor.*
 import java.net.*
+import kotlin.reflect.*
 
 private const val MAX_CONNECTIONS_COUNT = 1000
 private const val IO_THREAD_COUNT_DEFAULT = 4
@@ -26,7 +27,8 @@ internal class ApacheEngine(override val config: ApacheEngineConfig) : HttpClien
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     private val engine: CloseableHttpAsyncClient = prepareClient().apply { start() }
 

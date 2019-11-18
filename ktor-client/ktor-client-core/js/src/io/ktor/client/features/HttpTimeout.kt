@@ -4,8 +4,14 @@
 
 package io.ktor.client.features
 
+/**
+ * HTTP connect timeout exception.
+ */
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class HttpConnectTimeoutException : Throwable("Connect timeout has been expired")
 
+/**
+ * HTTP socket timeout exception.
+ */
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class HttpSocketTimeoutException : Throwable("Socket timeout has been expired")

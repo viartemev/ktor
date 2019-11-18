@@ -117,15 +117,13 @@ internal class ApacheResponseConsumer(
 
     override fun failed(cause: Exception) {
         exception = cause
-        cancel(
-            CancellationException(
-                "Fail to execute request", when (cause) {
-                    is ConnectException -> HttpConnectTimeoutException()
-                    is SocketTimeoutException -> HttpSocketTimeoutException()
-                    else -> cause
-                }
-            )
-        )
+        val mappedCause = when (cause) {
+            is ConnectException -> HttpConnectTimeoutException()
+            is SocketTimeoutException -> HttpSocketTimeoutException()
+            else -> cause
+        }
+
+        cancel(CancellationException("Fail to execute request", mappedCause))
         releaseContinuation(Result.failure(cause))
     }
 

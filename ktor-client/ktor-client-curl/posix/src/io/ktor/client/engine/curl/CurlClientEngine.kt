@@ -14,11 +14,13 @@ import io.ktor.http.cio.*
 import io.ktor.util.date.*
 import kotlinx.coroutines.*
 import io.ktor.utils.io.*
+import kotlin.reflect.*
 
 internal class CurlClientEngine(override val config: CurlClientEngineConfig) : HttpClientEngineBase("ktor-curl") {
     override val dispatcher = Dispatchers.Unconfined
 
-    override val supportedExtensions = setOf(HttpTimeout.Configuration.Extension)
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override val supportedExtensions: Set<KType> = setOf(typeOf<HttpTimeout.Configuration>())
 
     private val curlProcessor = CurlProcessor(coroutineContext)
 
