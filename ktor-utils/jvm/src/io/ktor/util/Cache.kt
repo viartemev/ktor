@@ -7,6 +7,16 @@ package io.ktor.util
 import java.util.*
 
 /**
+ * Initial capacity of [LinkedHashMap] used as [LRUCache].
+ */
+private const val CACHE_INITIAL_CAPACITY = 10
+
+/**
+ * Load factory of [LinkedHashMap] used as [LRUCache].
+ */
+private const val CACHE_LOAD_FACTOR = 0.75f
+
+/**
  * Create a new instance of thread safe [LRUCache] and return it.
  */
 @InternalAPI
@@ -21,7 +31,7 @@ class LRUCache<K, V> internal constructor(
     private val supplier: (K) -> V,
     private val close: (V) -> Unit,
     private val maxSize: Int
-) : LinkedHashMap<K, V>(10, 0.75f, true) {
+) : LinkedHashMap<K, V>(CACHE_INITIAL_CAPACITY, CACHE_LOAD_FACTOR, true) {
 
     override fun removeEldestEntry(eldest: Map.Entry<K, V>): Boolean {
         return (size > maxSize).also {
