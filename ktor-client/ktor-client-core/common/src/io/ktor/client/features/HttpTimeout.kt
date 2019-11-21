@@ -16,19 +16,19 @@ import kotlin.native.concurrent.*
  * or considered as infinite time if engine doesn't provide them.
  */
 class HttpTimeout(
-    private val requestTimeout: Long?,
-    private val connectTimeout: Long?,
-    private val socketTimeout: Long?
+    private val requestTimeoutMillis: Long?,
+    private val connectTimeoutMillis: Long?,
+    private val socketTimeoutMillis: Long?
 ) {
     /**
      * [HttpTimeout] extension configuration that is used during installation.
      */
     class HttpTimeoutExtension(
-        var requestTimeout: Long? = null,
-        var connectTimeout: Long? = null,
-        var socketTimeout: Long? = null
+        var requestTimeoutMillis: Long? = null,
+        var connectTimeoutMillis: Long? = null,
+        var socketTimeoutMillis: Long? = null
     ) {
-        internal fun build(): HttpTimeout = HttpTimeout(requestTimeout, connectTimeout, socketTimeout)
+        internal fun build(): HttpTimeout = HttpTimeout(requestTimeoutMillis, connectTimeoutMillis, socketTimeoutMillis)
 
         companion object {
             @SharedImmutable
@@ -39,7 +39,8 @@ class HttpTimeout(
     /**
      * Utils method that return true if at least one timeout is configured (has not null value).
      */
-    private fun hasNotNullTimeouts() = requestTimeout != null || connectTimeout != null || socketTimeout != null
+    private fun hasNotNullTimeouts() =
+        requestTimeoutMillis != null || connectTimeoutMillis != null || socketTimeoutMillis != null
 
     /**
      * Companion object for feature installation.
@@ -48,7 +49,8 @@ class HttpTimeout(
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
-        override fun prepare(block: HttpTimeoutExtension.() -> Unit): HttpTimeout = HttpTimeoutExtension().apply(block).build()
+        override fun prepare(block: HttpTimeoutExtension.() -> Unit): HttpTimeout =
+            HttpTimeoutExtension().apply(block).build()
 
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
@@ -59,11 +61,11 @@ class HttpTimeout(
                 }
 
                 configuration?.apply {
-                    connectTimeout = connectTimeout ?: feature.connectTimeout
-                    socketTimeout = socketTimeout ?: feature.socketTimeout
-                    requestTimeout = requestTimeout ?: feature.requestTimeout
+                    connectTimeoutMillis = connectTimeoutMillis ?: feature.connectTimeoutMillis
+                    socketTimeoutMillis = socketTimeoutMillis ?: feature.socketTimeoutMillis
+                    requestTimeoutMillis = requestTimeoutMillis ?: feature.requestTimeoutMillis
 
-                    val requestTimeout = requestTimeout ?: feature.requestTimeout
+                    val requestTimeout = requestTimeoutMillis ?: feature.requestTimeoutMillis
                     if (requestTimeout == null || requestTimeout == 0L) return@apply
 
                     val executionContext = context.executionContext

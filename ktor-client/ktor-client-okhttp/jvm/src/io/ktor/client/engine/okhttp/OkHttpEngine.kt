@@ -187,8 +187,8 @@ internal fun OutgoingContent.convertToOkHttpBody(callContext: CoroutineContext):
 private fun OkHttpClient.Builder.setupTimeoutAttributes(
     timeoutAttributes: HttpTimeout.HttpTimeoutExtension
 ): OkHttpClient.Builder {
-    timeoutAttributes.connectTimeout?.let { connectTimeout(it, TimeUnit.MILLISECONDS) }
-    timeoutAttributes.socketTimeout?.let {
+    timeoutAttributes.connectTimeoutMillis?.let { connectTimeout(it, TimeUnit.MILLISECONDS) }
+    timeoutAttributes.socketTimeoutMillis?.let {
         readTimeout(it, TimeUnit.MILLISECONDS)
         writeTimeout(it, TimeUnit.MILLISECONDS)
     }

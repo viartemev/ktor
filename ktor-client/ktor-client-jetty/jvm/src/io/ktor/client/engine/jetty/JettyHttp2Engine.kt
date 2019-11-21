@@ -70,11 +70,11 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
  * Update [HTTP2Client] to use connect and socket timeouts specified by [HttpTimeout] feature.
  */
 private fun HTTP2Client.setupTimeoutAttributes(timeoutAttributes: HttpTimeout.HttpTimeoutExtension?) {
-    timeoutAttributes?.connectTimeout?.let {
+    timeoutAttributes?.connectTimeoutMillis?.let {
         connectTimeout = when (it) {
             0L -> Long.MAX_VALUE
             else -> it
         }
     }
-    timeoutAttributes?.socketTimeout?.let { idleTimeout = it }
+    timeoutAttributes?.socketTimeoutMillis?.let { idleTimeout = it }
 }

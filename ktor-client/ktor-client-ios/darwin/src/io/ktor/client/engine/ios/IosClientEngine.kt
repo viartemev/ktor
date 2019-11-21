@@ -143,7 +143,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
  */
 private fun NSMutableURLRequest.setupSocketTimeout(requestData: HttpRequestData) {
     // iOS timeout works like a socket timeout.
-    requestData.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.socketTimeout?.let {
+    requestData.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.socketTimeoutMillis?.let {
         // Timeout should be specified in seconds.
         setTimeoutInterval(it / 1000.0)
     }
