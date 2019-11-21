@@ -61,11 +61,10 @@ open class ByteChannelSmokeTest : ByteChannelTestBase() {
         bc.flush()
         bc.close(IllegalStateException("Something goes wrong"))
 
-        val exception = assertFails {
+        val exception = assertFailsWith<IllegalStateException> {
             bc.readUTF8LineTo(StringBuilder(), 10)
         }
 
-        assertTrue { exception is IllegalStateException }
         assertEquals("Something goes wrong", exception.message)
     }
 
