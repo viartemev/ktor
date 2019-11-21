@@ -23,7 +23,7 @@ class HttpTimeout(
     /**
      * [HttpTimeout] extension configuration that is used during installation.
      */
-    class Extension(
+    class HttpTimeoutExtension(
         var requestTimeout: Long? = null,
         var connectTimeout: Long? = null,
         var socketTimeout: Long? = null
@@ -32,7 +32,7 @@ class HttpTimeout(
 
         companion object {
             @SharedImmutable
-            val key = AttributeKey<Extension>("TimeoutConfiguration")
+            val key = AttributeKey<HttpTimeoutExtension>("TimeoutConfiguration")
         }
     }
 
@@ -44,18 +44,18 @@ class HttpTimeout(
     /**
      * Companion object for feature installation.
      */
-    companion object Feature : HttpClientFeature<Extension, HttpTimeout> {
+    companion object Feature : HttpClientFeature<HttpTimeoutExtension, HttpTimeout> {
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
-        override fun prepare(block: Extension.() -> Unit): HttpTimeout = Extension().apply(block).build()
+        override fun prepare(block: HttpTimeoutExtension.() -> Unit): HttpTimeout = HttpTimeoutExtension().apply(block).build()
 
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
-                var configuration = context.getExtensionOrNull(Extension.key)
+                var configuration = context.getExtensionOrNull(HttpTimeoutExtension.key)
                 if (configuration == null && feature.hasNotNullTimeouts()) {
-                    configuration = Extension()
-                    context.setExtension(Extension.key, configuration)
+                    configuration = HttpTimeoutExtension()
+                    context.setExtension(HttpTimeoutExtension.key, configuration)
                 }
 
                 configuration?.apply {

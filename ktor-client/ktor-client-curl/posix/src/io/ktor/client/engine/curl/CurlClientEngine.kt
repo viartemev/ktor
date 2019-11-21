@@ -18,7 +18,7 @@ import io.ktor.utils.io.*
 internal class CurlClientEngine(override val config: CurlClientEngineConfig) : HttpClientEngineBase("ktor-curl") {
     override val dispatcher = Dispatchers.Unconfined
 
-    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
+    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
 
     private val curlProcessor = CurlProcessor(coroutineContext)
 
