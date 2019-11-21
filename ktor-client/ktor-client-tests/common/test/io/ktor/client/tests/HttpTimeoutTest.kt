@@ -16,7 +16,7 @@ import kotlin.test.*
 
 class HttpTimeoutTest : ClientLoader() {
     @Test
-    fun getTest() = clientTests {
+    fun testGet() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 500 }
         }
@@ -30,7 +30,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getRequestTimeoutTest() = clientTests {
+    fun testGetRequestTimeout() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 10 }
         }
@@ -45,7 +45,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getRequestTimeoutPerRequestAttributesTest() = clientTests {
+    fun testGetRequestTimeoutPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -65,7 +65,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getWithSeparateReceiveTest() = clientTests {
+    fun testGetWithSeparateReceive() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 500 }
         }
@@ -82,7 +82,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getWithSeparateReceivePerRequestAttributesTest() = clientTests {
+    fun testGetWithSeparateReceivePerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -104,7 +104,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getRequestTimeoutWithSeparateReceiveTest() = clientTests(listOf("Curl", "Ios", "Js")) {
+    fun testGetRequestTimeoutWithSeparateReceive() = clientTests(listOf("Curl", "Ios", "Js")) {
         config {
             install(HttpTimeout) { requestTimeout = 1000 }
         }
@@ -121,7 +121,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getRequestTimeoutWithSeparateReceivePerRequestAttributesTest() = clientTests(listOf("Curl", "Ios", "Js")) {
+    fun testGetRequestTimeoutWithSeparateReceivePerRequestAttributes() = clientTests(listOf("Curl", "Ios", "Js")) {
         config {
             install(HttpTimeout)
         }
@@ -143,7 +143,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getStreamTest() = clientTests {
+    fun testGetStream() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 500 }
         }
@@ -158,7 +158,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getStreamPerRequestAttributesTest() = clientTests {
+    fun testGetStreamPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -178,7 +178,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getStreamRequestTimeoutTest() = clientTests {
+    fun testGetStreamRequestTimeout() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 500 }
         }
@@ -193,7 +193,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun getStreamRequestTimeoutPerRequestAttributesTest() = clientTests {
+    fun testGetStreamRequestTimeoutPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -213,7 +213,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectTest() = clientTests {
+    fun testRedirect() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 500 }
         }
@@ -229,7 +229,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectPerRequestAttributesTest() = clientTests {
+    fun testRedirectPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -249,7 +249,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectRequestTimeoutOnFirstStepTest() = clientTests {
+    fun testRedirectRequestTimeoutOnFirstStep() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 10 }
         }
@@ -265,7 +265,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectRequestTimeoutOnFirstStepPerRequestAttributesTest() = clientTests {
+    fun testRedirectRequestTimeoutOnFirstStepPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -286,7 +286,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectRequestTimeoutOnSecondStepTest() = clientTests {
+    fun testRedirectRequestTimeoutOnSecondStep() = clientTests {
         config {
             install(HttpTimeout) { requestTimeout = 200 }
         }
@@ -302,7 +302,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun redirectRequestTimeoutOnSecondStepPerRequestAttributesTest() = clientTests {
+    fun testRedirectRequestTimeoutOnSecondStepPerRequestAttributes() = clientTests {
         config {
             install(HttpTimeout)
         }
@@ -323,7 +323,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun connectTimeoutTest() = clientTests(listOf("Js", "Ios")) {
+    fun testConnectTimeout() = clientTests(listOf("Js", "Ios")) {
         config {
             install(HttpTimeout) { connectTimeout = 1000 }
         }
@@ -336,7 +336,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun connectTimeoutPerRequestAttributesTest() = clientTests(listOf("Js", "Ios")) {
+    fun testConnectTimeoutPerRequestAttributes() = clientTests(listOf("Js", "Ios")) {
         config {
             install(HttpTimeout)
         }
@@ -354,7 +354,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun socketTimeoutReadTest() = clientTests(listOf("Js", "Curl")) {
+    fun testSocketTimeoutRead() = clientTests(listOf("Js", "Curl")) {
         config {
             install(HttpTimeout) { socketTimeout = 1000 }
         }
@@ -369,7 +369,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun socketTimeoutReadPerRequestAttributesTest() = clientTests(listOf("Js", "Curl")) {
+    fun testSocketTimeoutReadPerRequestAttributes() = clientTests(listOf("Js", "Curl")) {
         config {
             install(HttpTimeout)
         }
@@ -389,7 +389,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun socketTimeoutWriteFailOnWriteTest() = clientTests(listOf("Js", "Curl", "Android")) {
+    fun testSocketTimeoutWriteFailOnWrite() = clientTests(listOf("Js", "Curl", "Android")) {
         config {
             install(HttpTimeout) { socketTimeout = 500 }
         }
@@ -402,7 +402,7 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
-    fun socketTimeoutWriteFailOnWritePerRequestAttributesTest() = clientTests(listOf("Js", "Curl", "Android")) {
+    fun testSocketTimeoutWriteFailOnWritePerRequestAttributes() = clientTests(listOf("Js", "Curl", "Android")) {
         config {
             install(HttpTimeout)
         }
