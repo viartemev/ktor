@@ -39,7 +39,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
+    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
 
     private val engine: OkHttpClient = config.preconfigured ?: run {
         val builder = OkHttpClient.Builder()
@@ -58,7 +58,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         val callContext = callContext()
         val engineRequest = data.convertToOkHttpRequest(callContext)
 
-        val requestEngine = clientCache[data.getExtensionOrNull(HttpTimeout.Extension.key)]
+        val requestEngine = clientCache[data.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)]
             ?: error("OkHttpClient can't be constructed")
 
         return if (data.isUpgradeRequest()) {
@@ -125,7 +125,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         return HttpResponseData(status, requestTime, headers, version, body, callContext)
     }
 
-    private fun createOkHttpClient(timeoutExtension: HttpTimeout.Extension?) = timeoutExtension?.let {
+    private fun createOkHttpClient(timeoutExtension: HttpTimeout.HttpTimeoutExtension?) = timeoutExtension?.let {
         engine.newBuilder()
             .setupTimeoutAttributes(it)
             .build()
@@ -182,10 +182,10 @@ internal fun OutgoingContent.convertToOkHttpBody(callContext: CoroutineContext):
 }
 
 /**
- * Update [OkHttpClient.Builder] setting timeout configuration taken from [HttpTimeout.Extension].
+ * Update [OkHttpClient.Builder] setting timeout configuration taken from [HttpTimeout.HttpTimeoutExtension].
  */
 private fun OkHttpClient.Builder.setupTimeoutAttributes(
-    timeoutAttributes: HttpTimeout.Extension
+    timeoutAttributes: HttpTimeout.HttpTimeoutExtension
 ): OkHttpClient.Builder {
     timeoutAttributes.connectTimeout?.let { connectTimeout(it, TimeUnit.MILLISECONDS) }
     timeoutAttributes.socketTimeout?.let {

@@ -11,7 +11,6 @@ import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.util.*
 import io.ktor.util.date.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
@@ -25,7 +24,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
     // TODO: replace with UI dispatcher
     override val dispatcher = Dispatchers.Unconfined
 
-    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
+    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
@@ -144,7 +143,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
  */
 private fun NSMutableURLRequest.setupSocketTimeout(requestData: HttpRequestData) {
     // iOS timeout works like a socket timeout.
-    requestData.getExtensionOrNull(HttpTimeout.Extension.key)?.socketTimeout?.let {
+    requestData.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.socketTimeout?.let {
         // Timeout should be specified in seconds.
         setTimeoutInterval(it / 1000.0)
     }

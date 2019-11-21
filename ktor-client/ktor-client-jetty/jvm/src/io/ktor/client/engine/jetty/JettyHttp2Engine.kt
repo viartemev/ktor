@@ -27,7 +27,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.Extension.key)
+    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
 
     /**
      * Cache that keeps least recently used [HTTP2Client] instances.
@@ -37,7 +37,8 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
         val jettyClient =
-            clientCache[data.getExtensionOrNull(HttpTimeout.Extension.key)] ?: error("Http2Client can't be constructed")
+            clientCache[data.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)]
+                ?: error("Http2Client can't be constructed")
 
         return data.executeRequest(jettyClient, config, callContext)
     }
@@ -50,24 +51,25 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         }
     }
 
-    private fun createJettyClient(timeoutExtension: HttpTimeout.Extension?): HTTP2Client = HTTP2Client().apply {
-        addBean(config.sslContextFactory)
-        check(config.proxy == null) { "Proxy unsupported in Jetty engine." }
+    private fun createJettyClient(timeoutExtension: HttpTimeout.HttpTimeoutExtension?): HTTP2Client =
+        HTTP2Client().apply {
+            addBean(config.sslContextFactory)
+            check(config.proxy == null) { "Proxy unsupported in Jetty engine." }
 
-        executor = QueuedThreadPool().apply {
-            name = "ktor-jetty-client-qtp"
+            executor = QueuedThreadPool().apply {
+                name = "ktor-jetty-client-qtp"
+            }
+
+            setupTimeoutAttributes(timeoutExtension)
+
+            start()
         }
-
-        setupTimeoutAttributes(timeoutExtension)
-
-        start()
-    }
 }
 
 /**
  * Update [HTTP2Client] to use connect and socket timeouts specified by [HttpTimeout] feature.
  */
-private fun HTTP2Client.setupTimeoutAttributes(timeoutAttributes: HttpTimeout.Extension?) {
+private fun HTTP2Client.setupTimeoutAttributes(timeoutAttributes: HttpTimeout.HttpTimeoutExtension?) {
     timeoutAttributes?.connectTimeout?.let {
         connectTimeout = when (it) {
             0L -> Long.MAX_VALUE

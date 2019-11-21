@@ -206,11 +206,11 @@ internal class Endpoint(
     }
 
     /**
-     * Take timeout attributes from [config] and [HttpTimeout.Extension] stored in [attributes] and returns pair of
-     * connect timeout and socket timeout to be applied.
+     * Take timeout attributes from [config] and [HttpTimeout.HttpTimeoutExtension] stored in [attributes] and returns
+     * pair of connect timeout and socket timeout to be applied.
      */
     private fun retrieveTimeouts(requestData: HttpRequestData?): Pair<Long, Long> =
-        requestData?.getExtensionOrNull(HttpTimeout.Extension.key)?.let { timeoutAttributes ->
+        requestData?.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.let { timeoutAttributes ->
             val socketTimeout = timeoutAttributes.socketTimeout ?: config.endpoint.socketTimeout
             val connectTimeout = timeoutAttributes.connectTimeout ?: config.endpoint.connectTimeout
             return connectTimeout to socketTimeout

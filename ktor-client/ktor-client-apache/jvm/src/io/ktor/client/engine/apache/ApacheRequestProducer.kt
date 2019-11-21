@@ -193,7 +193,7 @@ internal class ApacheRequestProducer(
 }
 
 private fun RequestConfig.Builder.setupTimeoutAttributes(requestData: HttpRequestData): RequestConfig.Builder = also {
-    requestData.getExtensionOrNull(HttpTimeout.Extension.key)?.let { timeoutAttributes ->
+    requestData.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.let { timeoutAttributes ->
         timeoutAttributes.connectTimeout?.let { setConnectTimeout(it.toInt()) }
         timeoutAttributes.socketTimeout?.let { setSocketTimeout(it.toInt()) }
     }
