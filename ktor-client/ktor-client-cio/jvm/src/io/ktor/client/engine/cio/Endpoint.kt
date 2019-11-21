@@ -211,8 +211,8 @@ internal class Endpoint(
      */
     private fun retrieveTimeouts(requestData: HttpRequestData?): Pair<Long, Long> =
         requestData?.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.let { timeoutAttributes ->
-            val socketTimeout = timeoutAttributes.socketTimeout ?: config.endpoint.socketTimeout
-            val connectTimeout = timeoutAttributes.connectTimeout ?: config.endpoint.connectTimeout
+            val socketTimeout = timeoutAttributes.socketTimeoutMillis ?: config.endpoint.socketTimeout
+            val connectTimeout = timeoutAttributes.connectTimeoutMillis ?: config.endpoint.connectTimeout
             return connectTimeout to socketTimeout
         } ?: config.endpoint.connectTimeout to config.endpoint.socketTimeout
 

@@ -19,6 +19,12 @@ import java.lang.StringBuilder
 internal fun Application.timeoutTest() {
     routing {
         route("/timeout") {
+            head("/with-delay") {
+                val delay = call.parameters["delay"]!!.toLong()
+                delay(delay)
+                call.respond(HttpStatusCode.OK)
+            }
+
             get("/with-delay") {
                 val delay = call.parameters["delay"]!!.toLong()
                 delay(delay)

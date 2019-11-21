@@ -31,5 +31,5 @@ internal data class ConnectionResponseTask(
  */
 private fun RequestTask.containsCustomTimeouts() =
     request.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.let {
-        it.connectTimeout != null || it.socketTimeout != null
+        it.connectTimeoutMillis != null || it.socketTimeoutMillis != null
     } == true
