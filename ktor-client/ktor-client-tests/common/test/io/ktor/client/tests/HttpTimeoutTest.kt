@@ -22,7 +22,9 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.get<String>("$TEST_SERVER/timeout/with-delay?delay=10")
+            val response = client.get<String>("$TEST_SERVER/timeout/with-delay") {
+                parameter("delay", 10)
+            }
             assertEquals("Text", response)
         }
     }
@@ -35,7 +37,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFails {
-                client.get<String>("$TEST_SERVER/timeout/with-delay?delay=5000")
+                client.get<String>("$TEST_SERVER/timeout/with-delay") {
+                    parameter("delay", 5000)
+                }
             }
         }
     }
@@ -48,7 +52,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFails {
-                client.get<String>("$TEST_SERVER/timeout/with-delay?delay=5000") {
+                client.get<String>("$TEST_SERVER/timeout/with-delay") {
+                    parameter("delay", 5000)
+
                     setExtension(
                         HttpTimeout.HttpTimeoutExtension.key,
                         HttpTimeout.HttpTimeoutExtension(requestTimeout = 10)
@@ -65,8 +71,9 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay?delay=10") {
+            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay") {
                 method = HttpMethod.Get
+                parameter("delay", 10)
             }
             val res: String = response.receive()
 
@@ -81,8 +88,10 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay?delay=10") {
+            val response = client.request<HttpResponse>("$TEST_SERVER/timeout/with-delay") {
                 method = HttpMethod.Get
+                parameter("delay", 10)
+
                 setExtension(
                     HttpTimeout.HttpTimeoutExtension.key,
                     HttpTimeout.HttpTimeoutExtension(requestTimeout = 500)
@@ -101,8 +110,9 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream?delay=500") {
+            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream") {
                 method = HttpMethod.Get
+                parameter("delay", 500)
             }
             assertFailsWithRootCause<HttpRequestTimeoutException> {
                 response.readUTF8Line()
@@ -117,8 +127,10 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream?delay=500") {
+            val response = client.request<ByteReadChannel>("$TEST_SERVER/timeout/with-stream") {
                 method = HttpMethod.Get
+                parameter("delay", 500)
+
                 setExtension(
                     HttpTimeout.HttpTimeoutExtension.key,
                     HttpTimeout.HttpTimeoutExtension(requestTimeout = 1000)
@@ -137,7 +149,9 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.get<ByteArray>("$TEST_SERVER/timeout/with-stream?delay=10")
+            val response = client.get<ByteArray>("$TEST_SERVER/timeout/with-stream") {
+                parameter("delay", 10)
+            }
 
             assertEquals("Text", String(response))
         }
@@ -150,7 +164,9 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.get<ByteArray>("$TEST_SERVER/timeout/with-stream?delay=10") {
+            val response = client.get<ByteArray>("$TEST_SERVER/timeout/with-stream") {
+                parameter("delay", 10)
+
                 setExtension(
                     HttpTimeout.HttpTimeoutExtension.key,
                     HttpTimeout.HttpTimeoutExtension(requestTimeout = 500)
@@ -169,7 +185,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<ByteArray>("$TEST_SERVER/timeout/with-stream?delay=200")
+                client.get<ByteArray>("$TEST_SERVER/timeout/with-stream") {
+                    parameter("delay", 200)
+                }
             }
         }
     }
@@ -182,7 +200,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<ByteArray>("$TEST_SERVER/timeout/with-stream?delay=200") {
+                client.get<ByteArray>("$TEST_SERVER/timeout/with-stream") {
+                    parameter("delay", 200)
+
                     setExtension(
                         HttpTimeout.HttpTimeoutExtension.key,
                         HttpTimeout.HttpTimeoutExtension(requestTimeout = 500)
@@ -199,7 +219,11 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=10&count=2")
+            val response = client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                parameter("delay", 10)
+                parameter("count", 2)
+            }
+
             assertEquals("Text", response)
         }
     }
@@ -211,7 +235,10 @@ class HttpTimeoutTest : ClientLoader() {
         }
 
         test { client ->
-            val response = client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=10&count=2") {
+            val response = client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                parameter("delay", 10)
+                parameter("count", 2)
+
                 setExtension(
                     HttpTimeout.HttpTimeoutExtension.key,
                     HttpTimeout.HttpTimeoutExtension(requestTimeout = 500)
@@ -229,7 +256,10 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=500&count=5")
+                client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                    parameter("delay", 500)
+                    parameter("count", 5)
+                }
             }
         }
     }
@@ -242,7 +272,10 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=500&count=5") {
+                client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                    parameter("delay", 500)
+                    parameter("count", 5)
+
                     setExtension(
                         HttpTimeout.HttpTimeoutExtension.key,
                         HttpTimeout.HttpTimeoutExtension(requestTimeout = 10)
@@ -260,7 +293,10 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=250&count=5")
+                client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                    parameter("delay", 250)
+                    parameter("count", 5)
+                }
             }
         }
     }
@@ -273,7 +309,10 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpRequestTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-redirect?delay=250&count=5") {
+                client.get<String>("$TEST_SERVER/timeout/with-redirect") {
+                    parameter("delay", 250)
+                    parameter("count", 5)
+
                     setExtension(
                         HttpTimeout.HttpTimeoutExtension.key,
                         HttpTimeout.HttpTimeoutExtension(requestTimeout = 200)
@@ -322,7 +361,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpSocketTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-stream?delay=5000")
+                client.get<String>("$TEST_SERVER/timeout/with-stream") {
+                    parameter("delay", 5000)
+                }
             }
         }
     }
@@ -335,7 +376,9 @@ class HttpTimeoutTest : ClientLoader() {
 
         test { client ->
             assertFailsWithRootCause<HttpSocketTimeoutException> {
-                client.get<String>("$TEST_SERVER/timeout/with-stream?delay=5000") {
+                client.get<String>("$TEST_SERVER/timeout/with-stream") {
+                    parameter("delay", 5000)
+
                     setExtension(
                         HttpTimeout.HttpTimeoutExtension.key,
                         HttpTimeout.HttpTimeoutExtension(socketTimeout = 1000)
