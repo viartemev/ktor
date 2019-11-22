@@ -104,7 +104,7 @@ internal class Endpoint(
             }
 
             val timeout = config.requestTimeout
-            val responseData = if (timeout == 0L) {
+            val responseData = if (timeout == HttpTimeout.INFINITE_TIMEOUT_MS) {
                 request.write(output, callContext, overProxy)
                 readResponse(requestTime, request, input, output, callContext)
             } else {
@@ -148,13 +148,13 @@ internal class Endpoint(
                 if (address.isUnresolved) throw UnresolvedAddressException()
 
                 val connection = when (connectTimeout) {
-                    0L -> connectionFactory.connect(address) {
-                        this.socketTimeout = socketTimeout
+                    HttpTimeout.INFINITE_TIMEOUT_MS -> connectionFactory.connect(address) {
+                        this.socketTimeout = convertLongTimeoutToLongWithInfiniteAsZero(socketTimeout)
                     }
                     else -> {
                         val connection = withTimeoutOrNull(connectTimeout) {
                             connectionFactory.connect(address) {
-                                this.socketTimeout = socketTimeout
+                                this.socketTimeout = convertLongTimeoutToLongWithInfiniteAsZero(socketTimeout)
                             }
                         }
                         if (connection == null) {

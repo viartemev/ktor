@@ -4,6 +4,7 @@
 
 package io.ktor.client.tests
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
@@ -507,5 +508,17 @@ class HttpTimeoutTest : ClientLoader() {
                 }
             }
         }
+    }
+
+    @Test
+    fun testNonPositiveTimeout() {
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = -1) }
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 0) }
+
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = -1) }
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = 0) }
+
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(connectTimeoutMillis = -1) }
+        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(connectTimeoutMillis = 0) }
     }
 }

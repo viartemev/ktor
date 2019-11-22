@@ -384,6 +384,7 @@ public final class io/ktor/client/features/HttpSocketTimeoutException : java/net
 
 public final class io/ktor/client/features/HttpTimeout {
 	public static final field Feature Lio/ktor/client/features/HttpTimeout$Feature;
+	public static final field INFINITE_TIMEOUT_MS J
 	public fun <init> (Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/Long;)V
 }
 
@@ -400,21 +401,26 @@ public final class io/ktor/client/features/HttpTimeout$HttpTimeoutExtension {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/Long;)V
 	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getConnectTimeout ()Ljava/lang/Long;
-	public final fun getRequestTimeout ()Ljava/lang/Long;
-	public final fun getSocketTimeout ()Ljava/lang/Long;
-	public final fun setConnectTimeout (Ljava/lang/Long;)V
-	public final fun setRequestTimeout (Ljava/lang/Long;)V
-	public final fun setSocketTimeout (Ljava/lang/Long;)V
+	public final fun getConnectTimeoutMillis ()Ljava/lang/Long;
+	public final fun getRequestTimeoutMillis ()Ljava/lang/Long;
+	public final fun getSocketTimeoutMillis ()Ljava/lang/Long;
+	public final fun setConnectTimeoutMillis (Ljava/lang/Long;)V
+	public final fun setRequestTimeoutMillis (Ljava/lang/Long;)V
+	public final fun setSocketTimeoutMillis (Ljava/lang/Long;)V
 }
 
 public final class io/ktor/client/features/HttpTimeout$HttpTimeoutExtension$Companion {
 	public final fun getKey ()Lio/ktor/util/AttributeKey;
 }
 
-public final class io/ktor/client/features/HttpTimeoutKt {
+public final class io/ktor/client/features/HttpTimeoutJVMKt {
 	public static final fun mapEngineExceptions (Lkotlinx/coroutines/CoroutineScope;Lio/ktor/utils/io/ByteReadChannel;)Lio/ktor/utils/io/ByteReadChannel;
 	public static final fun mapEngineExceptions (Lkotlinx/coroutines/CoroutineScope;Lio/ktor/utils/io/ByteWriteChannel;)Lio/ktor/utils/io/ByteWriteChannel;
+}
+
+public final class io/ktor/client/features/HttpTimeoutKt {
+	public static final fun convertLongTimeoutToIntWithInfiniteAsZero (J)I
+	public static final fun convertLongTimeoutToLongWithInfiniteAsZero (J)J
 }
 
 public final class io/ktor/client/features/RedirectResponseException : io/ktor/client/features/ResponseException {

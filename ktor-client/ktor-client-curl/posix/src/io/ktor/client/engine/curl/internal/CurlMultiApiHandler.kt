@@ -61,7 +61,11 @@ internal class CurlMultiApiHandler : Closeable {
             option(CURLOPT_WRITEDATA, responseDataRef)
             option(CURLOPT_PRIVATE, responseDataRef)
             option(CURLOPT_ACCEPT_ENCODING, "")
-            option(CURLOPT_CONNECTTIMEOUT_MS, request.connectTimeout)
+            request.connectTimeout?.let {
+                if (it != HttpTimeout.INFINITE_TIMEOUT_MS) {
+                    option(CURLOPT_CONNECTTIMEOUT_MS, request.connectTimeout)
+                }
+            }
 
             request.proxy?.let { proxy ->
                 option(CURLOPT_PROXY, proxy.toString())
