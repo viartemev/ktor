@@ -24,15 +24,41 @@ class HttpTimeout(
      * [HttpTimeout] extension configuration that is used during installation.
      */
     class HttpTimeoutExtension(
-        var requestTimeoutMillis: Long? = null,
-        var connectTimeoutMillis: Long? = null,
-        var socketTimeoutMillis: Long? = null
+        requestTimeoutMillis: Long? = null,
+        connectTimeoutMillis: Long? = null,
+        socketTimeoutMillis: Long? = null
     ) {
+
+        var requestTimeoutMillis: Long? = requestTimeoutMillis
+            set(value) {
+                field = checkTimeoutValue(value)
+            }
+
+        var connectTimeoutMillis: Long? = connectTimeoutMillis
+            set(value) {
+                field = checkTimeoutValue(value)
+            }
+
+        var socketTimeoutMillis: Long? = socketTimeoutMillis
+            set(value) {
+                field = checkTimeoutValue(value)
+            }
+
         internal fun build(): HttpTimeout = HttpTimeout(requestTimeoutMillis, connectTimeoutMillis, socketTimeoutMillis)
+
+        private fun checkTimeoutValue(value: Long?): Long? {
+            check(value == null || value > 0) {
+                "Only positive timeout values are allowed, for infinite timeout use INFINITE_TIMEOUT_MS"
+            }
+            return value
+        }
 
         companion object {
             @SharedImmutable
             val key = AttributeKey<HttpTimeoutExtension>("TimeoutConfiguration")
+
+            @SharedImmutable
+            const val INFINITE_TIMEOUT_MS = Long.MAX_VALUE
         }
     }
 
