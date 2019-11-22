@@ -23,23 +23,29 @@ class HttpTimeout(
     /**
      * [HttpTimeout] extension configuration that is used during installation.
      */
-    class HttpTimeoutExtension(
-        requestTimeoutMillis: Long? = null,
-        connectTimeoutMillis: Long? = null,
-        socketTimeoutMillis: Long? = null
-    ) {
+    class HttpTimeoutExtension {
 
-        var requestTimeoutMillis: Long? = requestTimeoutMillis
+        constructor(
+            requestTimeoutMillis: Long? = null,
+            connectTimeoutMillis: Long? = null,
+            socketTimeoutMillis: Long? = null
+        ) {
+            this.requestTimeoutMillis = requestTimeoutMillis
+            this.connectTimeoutMillis = connectTimeoutMillis
+            this.socketTimeoutMillis = socketTimeoutMillis
+        }
+
+        var requestTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
             }
 
-        var connectTimeoutMillis: Long? = connectTimeoutMillis
+        var connectTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
             }
 
-        var socketTimeoutMillis: Long? = socketTimeoutMillis
+        var socketTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
             }
@@ -56,9 +62,6 @@ class HttpTimeout(
         companion object {
             @SharedImmutable
             val key = AttributeKey<HttpTimeoutExtension>("TimeoutConfiguration")
-
-            @SharedImmutable
-            const val INFINITE_TIMEOUT_MS = Long.MAX_VALUE
         }
     }
 
@@ -74,6 +77,9 @@ class HttpTimeout(
     companion object Feature : HttpClientFeature<HttpTimeoutExtension, HttpTimeout> {
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
+
+        @SharedImmutable
+        const val INFINITE_TIMEOUT_MS = Long.MAX_VALUE
 
         override fun prepare(block: HttpTimeoutExtension.() -> Unit): HttpTimeout =
             HttpTimeoutExtension().apply(block).build()
@@ -92,7 +98,7 @@ class HttpTimeout(
                     requestTimeoutMillis = requestTimeoutMillis ?: feature.requestTimeoutMillis
 
                     val requestTimeout = requestTimeoutMillis ?: feature.requestTimeoutMillis
-                    if (requestTimeout == null || requestTimeout == 0L) return@apply
+                    if (requestTimeout == null || requestTimeout == INFINITE_TIMEOUT_MS) return@apply
 
                     val executionContext = context.executionContext
                     val killer = GlobalScope.launch {
@@ -123,3 +129,17 @@ expect class HttpConnectTimeoutException : IOException
  * This exception is thrown in case socket timeout exceeded.
  */
 expect class HttpSocketTimeoutException : IOException
+
+/**
+ * Convert long timeout in milliseconds to int value. To do that we need to consider [HttpTimeout.INFINITE_TIMEOUT_MS]
+ * as zero and convert timeout value to [Int].
+ */
+@InternalAPI
+fun convertLongTimeoutToIntWithInfiniteAsZero(timeout: Long): Int =
+    convertLongTimeoutToLongWithInfiniteAsZero(timeout).toInt()
+
+@InternalAPI
+fun convertLongTimeoutToLongWithInfiniteAsZero(timeout: Long): Long = when (timeout) {
+    HttpTimeout.INFINITE_TIMEOUT_MS -> 0L
+    else -> timeout
+}

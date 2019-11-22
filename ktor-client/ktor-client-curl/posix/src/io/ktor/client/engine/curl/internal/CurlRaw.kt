@@ -26,7 +26,7 @@ internal suspend fun HttpRequestData.toCurlRequest(config: HttpClientEngineConfi
     headers = headersToCurl(),
     proxy = config.proxy,
     content = body.toCurlByteArray(),
-    connectTimeout = getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.connectTimeoutMillis ?: 0
+    connectTimeout = getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)?.connectTimeoutMillis
 )
 
 internal class CurlRequestData(
@@ -35,7 +35,7 @@ internal class CurlRequestData(
     val headers: CPointer<curl_slist>,
     val proxy: ProxyConfig?,
     val content: ByteArray,
-    val connectTimeout: Long
+    val connectTimeout: Long?
 ) {
     override fun toString(): String =
         "CurlRequestData(url='$url', method='$method', content: ${content.size} bytes)"

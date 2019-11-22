@@ -5,6 +5,7 @@
 package io.ktor.client.engine.cio
 
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.network.tls.*
 
 /**
@@ -70,7 +71,7 @@ class EndpointConfig {
     /**
      * Socket timeout in millis.
      */
-    val socketTimeout: Long = 0
+    val socketTimeout: Long = HttpTimeout.INFINITE_TIMEOUT_MS
 
     /**
      * Maximum number of connection attempts.

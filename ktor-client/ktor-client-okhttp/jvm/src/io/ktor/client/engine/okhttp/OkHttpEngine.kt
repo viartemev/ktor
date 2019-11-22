@@ -187,10 +187,12 @@ internal fun OutgoingContent.convertToOkHttpBody(callContext: CoroutineContext):
 private fun OkHttpClient.Builder.setupTimeoutAttributes(
     timeoutAttributes: HttpTimeout.HttpTimeoutExtension
 ): OkHttpClient.Builder {
-    timeoutAttributes.connectTimeoutMillis?.let { connectTimeout(it, TimeUnit.MILLISECONDS) }
+    timeoutAttributes.connectTimeoutMillis?.let {
+        connectTimeout(convertLongTimeoutToLongWithInfiniteAsZero(it), TimeUnit.MILLISECONDS)
+    }
     timeoutAttributes.socketTimeoutMillis?.let {
-        readTimeout(it, TimeUnit.MILLISECONDS)
-        writeTimeout(it, TimeUnit.MILLISECONDS)
+        readTimeout(convertLongTimeoutToLongWithInfiniteAsZero(it), TimeUnit.MILLISECONDS)
+        writeTimeout(convertLongTimeoutToLongWithInfiniteAsZero(it), TimeUnit.MILLISECONDS)
     }
     return this
 }
