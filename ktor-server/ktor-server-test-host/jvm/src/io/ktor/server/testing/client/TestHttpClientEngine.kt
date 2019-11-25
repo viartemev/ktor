@@ -21,7 +21,7 @@ class TestHttpClientEngine(override val config: TestHttpClientConfig) : HttpClie
 
     override val dispatcher = Dispatchers.IO
 
-    override val supportedExtensions = emptySet<EngineCapability<*>>()
+    override val supportedCapabilities = emptySet<HttpClientEngineCapability<*>>()
 
     private val app: TestApplicationEngine = config.app
 

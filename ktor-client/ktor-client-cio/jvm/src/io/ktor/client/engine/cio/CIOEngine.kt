@@ -20,7 +20,7 @@ internal class CIOEngine(override val config: CIOEngineConfig) : HttpClientEngin
 
     override val dispatcher by lazy { Dispatchers.fixedThreadPoolDispatcher(config.threadsCount, "ktor-cio-thread-%d") }
 
-    override val supportedExtensions = setOf(HttpTimeout)
+    override val supportedCapabilities = setOf(HttpTimeout)
 
     private val endpoints = ConcurrentHashMap<String, Endpoint>()
 
