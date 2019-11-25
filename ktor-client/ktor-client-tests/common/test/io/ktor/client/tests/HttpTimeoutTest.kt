@@ -4,7 +4,6 @@
 
 package io.ktor.client.tests
 
-import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
@@ -145,9 +144,9 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<String>("$TEST_URL/with-delay") {
                     parameter("delay", 5000)
 
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 10)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 10)
                     )
                 }
             }
@@ -182,9 +181,9 @@ class HttpTimeoutTest : ClientLoader() {
                 method = HttpMethod.Get
                 parameter("delay", 10)
 
-                setExtension(
-                    HttpTimeout.HttpTimeoutExtension.key,
-                    HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 500)
+                setCapability(
+                    HttpTimeout,
+                    HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 500)
                 )
             }
             val result: String = response.receive()
@@ -221,9 +220,9 @@ class HttpTimeoutTest : ClientLoader() {
                 method = HttpMethod.Get
                 parameter("delay", 500)
 
-                setExtension(
-                    HttpTimeout.HttpTimeoutExtension.key,
-                    HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 1000)
+                setCapability(
+                    HttpTimeout,
+                    HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 1000)
                 )
             }
             assertFailsWithRootCause<HttpRequestTimeoutException> {
@@ -257,9 +256,9 @@ class HttpTimeoutTest : ClientLoader() {
             val response = client.get<ByteArray>("$TEST_URL/with-stream") {
                 parameter("delay", 10)
 
-                setExtension(
-                    HttpTimeout.HttpTimeoutExtension.key,
-                    HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 500)
+                setCapability(
+                    HttpTimeout,
+                    HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 500)
                 )
             }
 
@@ -293,9 +292,9 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<ByteArray>("$TEST_URL/with-stream") {
                     parameter("delay", 200)
 
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 500)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 500)
                     )
                 }
             }
@@ -329,9 +328,9 @@ class HttpTimeoutTest : ClientLoader() {
                 parameter("delay", 10)
                 parameter("count", 2)
 
-                setExtension(
-                    HttpTimeout.HttpTimeoutExtension.key,
-                    HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 500)
+                setCapability(
+                    HttpTimeout,
+                    HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 500)
                 )
             }
             assertEquals("Text", response)
@@ -366,9 +365,9 @@ class HttpTimeoutTest : ClientLoader() {
                     parameter("delay", 500)
                     parameter("count", 5)
 
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 10)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 10)
                     )
                 }
             }
@@ -403,9 +402,9 @@ class HttpTimeoutTest : ClientLoader() {
                     parameter("delay", 250)
                     parameter("count", 5)
 
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 200)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(requestTimeoutMillis = 200)
                     )
                 }
             }
@@ -434,9 +433,9 @@ class HttpTimeoutTest : ClientLoader() {
         test { client ->
             assertFailsWithRootCause<HttpConnectTimeoutException> {
                 client.get<String>("http://www.google.com:81") {
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(connectTimeoutMillis = 1000)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(connectTimeoutMillis = 1000)
                     )
                 }
             }
@@ -469,9 +468,9 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<String>("$TEST_URL/with-stream") {
                     parameter("delay", 5000)
 
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = 1000)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(socketTimeoutMillis = 1000)
                     )
                 }
             }
@@ -501,9 +500,9 @@ class HttpTimeoutTest : ClientLoader() {
             assertFailsWithRootCause<HttpSocketTimeoutException> {
                 client.post("$TEST_URL/slow-read") {
                     body = makeString(4 * 1024 * 1024)
-                    setExtension(
-                        HttpTimeout.HttpTimeoutExtension.key,
-                        HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = 500)
+                    setCapability(
+                        HttpTimeout,
+                        HttpTimeout.HttpTimeoutCapabilityConfiguration(socketTimeoutMillis = 500)
                     )
                 }
             }
@@ -512,13 +511,37 @@ class HttpTimeoutTest : ClientLoader() {
 
     @Test
     fun testNonPositiveTimeout() {
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = -1) }
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(requestTimeoutMillis = 0) }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                requestTimeoutMillis = -1
+            )
+        }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                requestTimeoutMillis = 0
+            )
+        }
 
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = -1) }
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(socketTimeoutMillis = 0) }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                socketTimeoutMillis = -1
+            )
+        }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                socketTimeoutMillis = 0
+            )
+        }
 
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(connectTimeoutMillis = -1) }
-        assertFailsWith<IllegalStateException> { HttpTimeout.HttpTimeoutExtension(connectTimeoutMillis = 0) }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                connectTimeoutMillis = -1
+            )
+        }
+        assertFailsWith<IllegalStateException> {
+            HttpTimeout.HttpTimeoutCapabilityConfiguration(
+                connectTimeoutMillis = 0
+            )
+        }
     }
 }

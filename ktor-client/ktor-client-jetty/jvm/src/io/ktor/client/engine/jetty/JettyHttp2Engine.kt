@@ -21,13 +21,13 @@ private const val CLIENT_CACHE_SIZE = 10
 internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpClientEngineBase("ktor-jetty") {
 
     override val dispatcher: CoroutineDispatcher by lazy {
-        Dispatchers.fixedThreadPoolDispatcher(
+        Dispatchers.fixedThreadPoolDispatcher
             config.threadsCount,
             "ktor-jetty-thread-%d"
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
+    override val supportedExtensions = setOf(HttpTimeout)
 
     /**
      * Cache that keeps least recently used [HTTP2Client] instances.
@@ -37,7 +37,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
         val jettyClient =
-            clientCache[data.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)]
+            clientCache[data.getCapabilityOrNull(HttpTimeout)]
                 ?: error("Http2Client can't be constructed")
 
         return data.executeRequest(jettyClient, config, callContext)
@@ -51,7 +51,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
         }
     }
 
-    private fun createJettyClient(timeoutExtension: HttpTimeout.HttpTimeoutExtension?): HTTP2Client =
+    private fun createJettyClient(timeoutExtension: HttpTimeout.HttpTimeoutCapabilityConfiguration?): HTTP2Client =
         HTTP2Client().apply {
             addBean(config.sslContextFactory)
             check(config.proxy == null) { "Proxy unsupported in Jetty engine." }
@@ -69,7 +69,7 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
 /**
  * Update [HTTP2Client] to use connect and socket timeouts specified by [HttpTimeout] feature.
  */
-private fun HTTP2Client.setupTimeoutAttributes(timeoutAttributes: HttpTimeout.HttpTimeoutExtension?) {
+private fun HTTP2Client.setupTimeoutAttributes(timeoutAttributes: HttpTimeout.HttpTimeoutCapabilityConfiguration?) {
     timeoutAttributes?.connectTimeoutMillis?.let { connectTimeout = it }
     timeoutAttributes?.socketTimeoutMillis?.let { idleTimeout = it }
 }
