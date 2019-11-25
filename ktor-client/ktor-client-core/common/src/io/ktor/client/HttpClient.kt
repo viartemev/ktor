@@ -66,7 +66,7 @@ class HttpClient(
     override val coroutineContext: CoroutineContext get() = engine.coroutineContext
 
     /**
-     * Pipeline used for processing all the requests sent by this client.
+     * Pipeline used for processing all the (request)s sent by this client.
      */
     val requestPipeline: HttpRequestPipeline = HttpRequestPipeline()
 
@@ -155,6 +155,13 @@ class HttpClient(
     @InternalAPI
     suspend fun execute(builder: HttpRequestBuilder): HttpClientCall =
         requestPipeline.execute(builder, builder.body) as HttpClientCall
+
+    /**
+     * Check if the specified [capability] is supported by this client.
+     */
+    fun isSupported(capability: EngineCapability<Any>): Boolean {
+        return engine.supportedExtensions.contains(capability)
+    }
 
     /**
      * Returns a new [HttpClient] copying this client configuration,

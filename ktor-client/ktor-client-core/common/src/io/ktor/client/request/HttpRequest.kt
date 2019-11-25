@@ -6,6 +6,7 @@ package io.ktor.client.request
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -92,11 +93,6 @@ class HttpRequestBuilder : HttpMessageBuilder {
     val attributes: Attributes = Attributes(concurrent = true)
 
     /**
-     * Request extensions.
-     */
-    private val extensions: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
-
-    /**
      * Executes a [block] that configures the [URLBuilder] associated to this request.
      */
     fun url(block: URLBuilder.(URLBuilder) -> Unit): Unit = url.block(url)
@@ -107,7 +103,7 @@ class HttpRequestBuilder : HttpMessageBuilder {
     fun build(): HttpRequestData = HttpRequestData(
         url.build(), method, headers.build(),
         body as? OutgoingContent ?: error("No request transformation found: $body"),
-        executionContext, attributes, extensions
+        executionContext, attributes
     )
 
     /**
@@ -131,9 +127,6 @@ class HttpRequestBuilder : HttpMessageBuilder {
             @Suppress("UNCHECKED_CAST")
             attributes.put(it as AttributeKey<Any>, builder.attributes[it])
         }
-        builder.extensions.forEach { (key, value) ->
-            extensions[key] = value
-        }
 
         return this
     }
@@ -142,17 +135,18 @@ class HttpRequestBuilder : HttpMessageBuilder {
      * Retrieve extension by it's type.
      */
     @KtorExperimentalAPI
-    fun <T : Any> setExtension(key: AttributeKey<T>, extension: T) {
-        extensions[key] = extension
+    fun <T : Any> setCapability(key: EngineCapability<T>, extension: T) {
+        val capabilities = attributes.computeIfAbsent(engineCapabilitiesKey) { mutableMapOf() }
+        capabilities[key] = extension
     }
 
     /**
      * Add extension to the request.
      */
     @KtorExperimentalAPI
-    fun <T : Any> getExtensionOrNull(key: AttributeKey<T>): T? {
+    fun <T : Any> getCapabilityOrNull(key: EngineCapability<T>): T? {
         @Suppress("UNCHECKED_CAST")
-        return extensions[key] as T?
+        return attributes.getOrNull(engineCapabilitiesKey)?.get(key) as T?
     }
 
     companion object
@@ -168,22 +162,22 @@ class HttpRequestData internal constructor(
     val headers: Headers,
     val body: OutgoingContent,
     val executionContext: Job,
-    val attributes: Attributes,
-    private val extensions: Map<AttributeKey<*>, Any>
+    val attributes: Attributes
 ) {
     /**
      * Retrieve extension by it's type.
      */
     @KtorExperimentalAPI
-    fun <T> getExtensionOrNull(key: AttributeKey<T>): T? {
+    fun <T> getCapabilityOrNull(key: EngineCapability<T>): T? {
         @Suppress("UNCHECKED_CAST")
-        return extensions[key] as T?
+        return attributes.getOrNull(engineCapabilitiesKey)?.get(key) as T?
     }
 
     /**
      * Retrieve all extension keys associated with this request.
      */
-    internal fun getExtensionKeys(): Set<AttributeKey<*>> = extensions.keys
+    internal fun getRequiredCapabilities(): Set<EngineCapability<*>> =
+        attributes.getOrNull(engineCapabilitiesKey)?.keys ?: emptySet()
 
     override fun toString(): String = "HttpRequestData(url=$url, method=$method)"
 }

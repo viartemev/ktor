@@ -39,7 +39,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
+    override val supportedExtensions = setOf(HttpTimeout)
 
     private val engine: OkHttpClient = config.preconfigured ?: run {
         val builder = OkHttpClient.Builder()
@@ -58,7 +58,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         val callContext = callContext()
         val engineRequest = data.convertToOkHttpRequest(callContext)
 
-        val requestEngine = clientCache[data.getExtensionOrNull(HttpTimeout.HttpTimeoutExtension.key)]
+        val requestEngine = clientCache[data.getCapabilityOrNull(HttpTimeout)]
             ?: error("OkHttpClient can't be constructed")
 
         return if (data.isUpgradeRequest()) {
@@ -125,11 +125,12 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         return HttpResponseData(status, requestTime, headers, version, body, callContext)
     }
 
-    private fun createOkHttpClient(timeoutExtension: HttpTimeout.HttpTimeoutExtension?) = timeoutExtension?.let {
-        engine.newBuilder()
-            .setupTimeoutAttributes(it)
-            .build()
-    } ?: engine
+    private fun createOkHttpClient(timeoutExtension: HttpTimeout.HttpTimeoutCapabilityConfiguration?) =
+        timeoutExtension?.let {
+            engine.newBuilder()
+                .setupTimeoutAttributes(it)
+                .build()
+        } ?: engine
 }
 
 private fun BufferedSource.toChannel(context: CoroutineContext): ByteReadChannel = GlobalScope.writer(context) {
@@ -182,10 +183,11 @@ internal fun OutgoingContent.convertToOkHttpBody(callContext: CoroutineContext):
 }
 
 /**
- * Update [OkHttpClient.Builder] setting timeout configuration taken from [HttpTimeout.HttpTimeoutExtension].
+ * Update [OkHttpClient.Builder] setting timeout configuration taken from
+ * [HttpTimeout.HttpTimeoutCapabilityConfiguration].
  */
 private fun OkHttpClient.Builder.setupTimeoutAttributes(
-    timeoutAttributes: HttpTimeout.HttpTimeoutExtension
+    timeoutAttributes: HttpTimeout.HttpTimeoutCapabilityConfiguration
 ): OkHttpClient.Builder {
     timeoutAttributes.connectTimeoutMillis?.let {
         connectTimeout(convertLongTimeoutToLongWithInfiniteAsZero(it), TimeUnit.MILLISECONDS)

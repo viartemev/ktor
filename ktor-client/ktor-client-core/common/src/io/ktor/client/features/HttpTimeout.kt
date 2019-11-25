@@ -5,11 +5,24 @@
 package io.ktor.client.features
 
 import io.ktor.client.*
+import io.ktor.client.engine.*
 import io.ktor.client.request.*
 import io.ktor.util.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
+
+//val map: Map<EngineCapability<*>, Any> = mapOf(
+//    HttpTimeout to HttpTimeout.HttpTimeoutExtension()
+//)
+//
+//fun <T> x(key: EngineCapability<T>): T {
+//    TODO()
+//}
+//
+//fun foo() {
+//    val y: HttpTimeout.HttpTimeoutExtension = (HttpTimeout)
+//}
 
 /**
  * Client HTTP timeout feature. There are no default values, so default timeouts will be taken from engine configuration
@@ -23,8 +36,10 @@ class HttpTimeout(
     /**
      * [HttpTimeout] extension configuration that is used during installation.
      */
-    class HttpTimeoutExtension {
-
+    class HttpTimeoutCapabilityConfiguration {
+        /**
+         * Creates a new instance of [HttpTimeoutCapabilityConfiguration].
+         */
         constructor(
             requestTimeoutMillis: Long? = null,
             connectTimeoutMillis: Long? = null,
@@ -35,16 +50,25 @@ class HttpTimeout(
             this.socketTimeoutMillis = socketTimeoutMillis
         }
 
+        /**
+         * Request timeout in milliseconds.
+         */
         var requestTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
             }
 
+        /**
+         * Connect timeout in milliseconds.
+         */
         var connectTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
             }
 
+        /**
+         * Socket timeout in milliseconds.
+         */
         var socketTimeoutMillis: Long?
             set(value) {
                 field = checkTimeoutValue(value)
@@ -61,7 +85,7 @@ class HttpTimeout(
 
         companion object {
             @SharedImmutable
-            val key = AttributeKey<HttpTimeoutExtension>("TimeoutConfiguration")
+            val key = AttributeKey<HttpTimeoutCapabilityConfiguration>("TimeoutConfiguration")
         }
     }
 
@@ -74,22 +98,23 @@ class HttpTimeout(
     /**
      * Companion object for feature installation.
      */
-    companion object Feature : HttpClientFeature<HttpTimeoutExtension, HttpTimeout> {
+    companion object Feature : HttpClientFeature<HttpTimeoutCapabilityConfiguration, HttpTimeout>,
+        EngineCapability<HttpTimeoutCapabilityConfiguration> {
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
         @SharedImmutable
         const val INFINITE_TIMEOUT_MS = Long.MAX_VALUE
 
-        override fun prepare(block: HttpTimeoutExtension.() -> Unit): HttpTimeout =
-            HttpTimeoutExtension().apply(block).build()
+        override fun prepare(block: HttpTimeoutCapabilityConfiguration.() -> Unit): HttpTimeout =
+            HttpTimeoutCapabilityConfiguration().apply(block).build()
 
         override fun install(feature: HttpTimeout, scope: HttpClient) {
             scope.requestPipeline.intercept(HttpRequestPipeline.Before) {
-                var configuration = context.getExtensionOrNull(HttpTimeoutExtension.key)
+                var configuration = context.getCapabilityOrNull(HttpTimeout)
                 if (configuration == null && feature.hasNotNullTimeouts()) {
-                    configuration = HttpTimeoutExtension()
-                    context.setExtension(HttpTimeoutExtension.key, configuration)
+                    configuration = HttpTimeoutCapabilityConfiguration()
+                    context.setCapability(HttpTimeout, configuration)
                 }
 
                 configuration?.apply {

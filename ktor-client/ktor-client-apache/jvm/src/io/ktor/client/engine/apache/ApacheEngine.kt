@@ -26,7 +26,7 @@ internal class ApacheEngine(override val config: ApacheEngineConfig) : HttpClien
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout.HttpTimeoutExtension.key)
+    override val supportedExtensions = setOf(HttpTimeout)
 
     private val engine: CloseableHttpAsyncClient = prepareClient().apply { start() }
 
