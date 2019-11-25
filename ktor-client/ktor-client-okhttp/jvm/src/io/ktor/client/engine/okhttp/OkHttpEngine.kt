@@ -39,7 +39,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
         )
     }
 
-    override val supportedExtensions = setOf(HttpTimeout)
+    override val supportedCapabilities = setOf(HttpTimeout)
 
     private val engine: OkHttpClient = config.preconfigured ?: run {
         val builder = OkHttpClient.Builder()

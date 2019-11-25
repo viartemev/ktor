@@ -12,18 +12,6 @@ import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 
-//val map: Map<EngineCapability<*>, Any> = mapOf(
-//    HttpTimeout to HttpTimeout.HttpTimeoutExtension()
-//)
-//
-//fun <T> x(key: EngineCapability<T>): T {
-//    TODO()
-//}
-//
-//fun foo() {
-//    val y: HttpTimeout.HttpTimeoutExtension = (HttpTimeout)
-//}
-
 /**
  * Client HTTP timeout feature. There are no default values, so default timeouts will be taken from engine configuration
  * or considered as infinite time if engine doesn't provide them.
@@ -77,7 +65,7 @@ class HttpTimeout(
         internal fun build(): HttpTimeout = HttpTimeout(requestTimeoutMillis, connectTimeoutMillis, socketTimeoutMillis)
 
         private fun checkTimeoutValue(value: Long?): Long? {
-            check(value == null || value > 0) {
+            require(value == null || value > 0) {
                 "Only positive timeout values are allowed, for infinite timeout use INFINITE_TIMEOUT_MS"
             }
             return value
@@ -99,7 +87,7 @@ class HttpTimeout(
      * Companion object for feature installation.
      */
     companion object Feature : HttpClientFeature<HttpTimeoutCapabilityConfiguration, HttpTimeout>,
-        EngineCapability<HttpTimeoutCapabilityConfiguration> {
+        HttpClientEngineCapability<HttpTimeoutCapabilityConfiguration> {
 
         override val key: AttributeKey<HttpTimeout> = AttributeKey("TimeoutFeature")
 
@@ -137,6 +125,8 @@ class HttpTimeout(
                 }
             }
         }
+
+        override fun createEmptyConfiguration() = HttpTimeoutCapabilityConfiguration()
     }
 }
 

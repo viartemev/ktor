@@ -24,7 +24,7 @@ internal class IosClientEngine(override val config: IosClientEngineConfig) : Htt
     // TODO: replace with UI dispatcher
     override val dispatcher = Dispatchers.Unconfined
 
-    override val supportedExtensions = setOf(HttpTimeout)
+    override val supportedCapabilities = setOf(HttpTimeout)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()

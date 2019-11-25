@@ -6,6 +6,8 @@ package io.ktor.client.statement
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
@@ -24,6 +26,22 @@ class HttpStatement(
     private val builder: HttpRequestBuilder,
     private val client: HttpClient
 ) {
+    /**
+     * Initialize and check that all request configuration related to client capabilities have correspondent features
+     * installed.
+     */
+    init {
+        val capabilities = builder.attributes.getOrNull(engineCapabilitiesKey)
+        if (capabilities != null) {
+            for (capability in capabilities.keys) {
+                if (capability !is HttpClientFeature<*, *>)
+                    continue
+
+                requireNotNull(client.feature(capability)) { "Given request requires $capability feature installed" }
+            }
+        }
+    }
+
     /**
      * Executes this statement and call the [block] with the streaming [response].
      *
