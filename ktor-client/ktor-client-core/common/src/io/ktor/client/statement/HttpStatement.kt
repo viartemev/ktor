@@ -26,20 +26,8 @@ class HttpStatement(
     private val builder: HttpRequestBuilder,
     private val client: HttpClient
 ) {
-    /**
-     * Initialize and check that all request configuration related to client capabilities have correspondent features
-     * installed.
-     */
     init {
-        val capabilities = builder.attributes.getOrNull(engineCapabilitiesKey)
-        if (capabilities != null) {
-            for (capability in capabilities.keys) {
-                if (capability !is HttpClientFeature<*, *>)
-                    continue
-
-                requireNotNull(client.feature(capability)) { "Given request requires $capability feature installed" }
-            }
-        }
+        checkCapabilities()
     }
 
     /**
@@ -133,6 +121,19 @@ class HttpStatement(
             }
             join()
         }
+    }
+
+    /**
+     * Check that all request configuration related to client capabilities have correspondent features installed.
+     */
+    private fun checkCapabilities() {
+        builder.attributes.getOrNull(engineCapabilitiesKey)?.keys
+            ?.filter { it is HttpClientFeature<*, *> }
+            ?.forEach {
+                requireNotNull(client.feature(it as HttpClientFeature<*, *>)) {
+                    "Consider install $it feature because request requires it to be installed"
+                }
+            }
     }
 
     override fun toString(): String = "HttpStatement[${builder.url.buildString()}]"
