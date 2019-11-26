@@ -114,7 +114,7 @@ class HttpTimeout(
                     if (requestTimeout == null || requestTimeout == INFINITE_TIMEOUT_MS) return@apply
 
                     val executionContext = context.executionContext
-                    val killer = GlobalScope.launch {
+                    val killer = scope.launch {
                         delay(requestTimeout)
                         executionContext.cancel(HttpRequestTimeoutException())
                     }
