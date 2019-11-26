@@ -9,6 +9,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.*
+import io.ktor.util.pipeline.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -53,13 +54,7 @@ interface HttpClientEngine : CoroutineScope, Closeable {
     fun install(client: HttpClient) {
         client.requestPipeline.intercept(HttpRequestPipeline.Before) {
             val clientEngineJob = this@HttpClientEngine.coroutineContext[Job]!!
-            clientEngineJob.invokeOnCompletion { cause ->
-                if (cause != null) {
-                    context.executionContext.cancel("Engine failed", cause)
-                } else {
-                    (context.executionContext[Job] as CompletableJob).complete()
-                }
-            }
+            attachToClientEngineJob(clientEngineJob)
         }
 
         client.sendPipeline.intercept(HttpSendPipeline.Engine) { content ->
@@ -111,6 +106,23 @@ interface HttpClientEngine : CoroutineScope, Closeable {
         attachToUserJob(callJob)
 
         return callContext
+    }
+}
+
+/**
+ * Attach client engine job
+ */
+private fun PipelineContext<*, HttpRequestBuilder>.attachToClientEngineJob(clientEngineJob: Job) {
+    val handler = clientEngineJob.invokeOnCompletion { cause ->
+        if (cause != null) {
+            context.executionContext.cancel("Engine failed", cause)
+        } else {
+            (context.executionContext[Job] as CompletableJob).complete()
+        }
+    }
+
+    context.executionContext[Job]!!.invokeOnCompletion {
+        handler.dispose()
     }
 }
 

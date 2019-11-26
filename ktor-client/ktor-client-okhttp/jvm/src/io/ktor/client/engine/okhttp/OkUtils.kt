@@ -18,18 +18,20 @@ internal suspend fun OkHttpClient.execute(request: Request): Response = suspendC
     val callback = object : Callback {
 
         override fun onFailure(call: Call, cause: IOException) {
-            if (!call.isCanceled) {
-                val mappedException = when (cause) {
-                    is SocketTimeoutException -> if (cause.message?.contains("connect") == true) {
-                        HttpConnectTimeoutException()
-                    } else {
-                        HttpSocketTimeoutException()
-                    }
-                    else -> cause
-                }
-
-                it.resumeWithException(mappedException)
+            if (call.isCanceled) {
+                return
             }
+
+            val mappedException = when (cause) {
+                is SocketTimeoutException -> if (cause.message?.contains("connect") == true) {
+                    HttpConnectTimeoutException()
+                } else {
+                    HttpSocketTimeoutException()
+                }
+                else -> cause
+            }
+
+            it.resumeWithException(mappedException)
         }
 
         override fun onResponse(call: Call, response: Response) {
