@@ -7,7 +7,7 @@ package io.ktor.client.engine
 import io.ktor.util.*
 import kotlin.native.concurrent.*
 
-private typealias T = Pair<String, HttpClientEngineFactory<HttpClientEngineConfig>>
+private typealias T = HttpClientEngineFactory<HttpClientEngineConfig>
 
 @InternalAPI
 @Suppress("KDocMissingDocumentation")
