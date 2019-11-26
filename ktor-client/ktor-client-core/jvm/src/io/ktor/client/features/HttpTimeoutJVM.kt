@@ -8,6 +8,7 @@ import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.net.*
+import kotlin.coroutines.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class HttpConnectTimeoutException : ConnectException("Connect timeout has been expired")
@@ -44,7 +45,7 @@ fun CoroutineScope.mapEngineExceptions(input: ByteWriteChannel): ByteWriteChanne
     val replacementChannel = ByteChannel()
     val wrapper = ByteChannelWrapper(replacementChannel)
 
-    launch {
+    writer(coroutineContext, wrapper) {
         try {
             wrapper.joinTo(input, closeOnEnd = true)
         } catch (cause: Throwable) {
