@@ -141,15 +141,17 @@ private fun BufferedSource.toChannel(context: CoroutineContext): ByteReadChannel
                 lastRead = try {
                     source.read(buffer)
                 } catch (cause: Throwable) {
-                    throw when (cause) {
-                        is SocketTimeoutException -> HttpSocketTimeoutException()
-                        else -> cause
-                    }
+                    throw mapExceptions(cause)
                 }
             }
         }
     }
 }.channel
+
+private fun mapExceptions(cause: Throwable) = when (cause) {
+    is SocketTimeoutException -> HttpSocketTimeoutException()
+    else -> cause
+}
 
 private fun HttpRequestData.convertToOkHttpRequest(callContext: CoroutineContext): Request {
     val builder = Request.Builder()
