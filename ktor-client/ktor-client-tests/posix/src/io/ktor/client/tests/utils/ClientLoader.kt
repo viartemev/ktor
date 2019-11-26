@@ -19,12 +19,7 @@ actual abstract class ClientLoader {
         block: suspend TestClientBuilder<HttpClientEngineConfig>.() -> Unit
     ) {
         engines
-            .filter {
-                it.first !in skipEngines
-            }
-            .map {
-                it.second
-            }
+            .filter { it.toString() !in skipEngines }
             .forEach {
                 testWithEngine(it) {
                     withTimeout(3000) {
