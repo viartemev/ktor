@@ -22,12 +22,11 @@ actual class HttpSocketTimeoutException : SocketTimeoutException("Socket timeout
  */
 @InternalAPI
 fun CoroutineScope.mapEngineExceptions(input: ByteReadChannel): ByteReadChannel {
-    val replacementChannel = ByteChannel()
-    val wrapper = ByteChannelWrapper(replacementChannel)
+    val replacementChannel = ByteChannelWithMappedExceptions()
 
     launch {
         try {
-            input.joinTo(wrapper, closeOnEnd = true)
+            input.joinTo(replacementChannel, closeOnEnd = true)
         } catch (cause: Throwable) {
             input.cancel(cause)
         }
@@ -42,28 +41,26 @@ fun CoroutineScope.mapEngineExceptions(input: ByteReadChannel): ByteReadChannel 
  */
 @InternalAPI
 fun CoroutineScope.mapEngineExceptions(input: ByteWriteChannel): ByteWriteChannel {
-    val replacementChannel = ByteChannel()
-    val wrapper = ByteChannelWrapper(replacementChannel)
+    val replacementChannel = ByteChannelWithMappedExceptions()
 
-    writer(coroutineContext, wrapper) {
+    writer(coroutineContext, replacementChannel) {
         try {
-            wrapper.joinTo(input, closeOnEnd = true)
+            replacementChannel.joinTo(input, closeOnEnd = true)
         } catch (cause: Throwable) {
-            wrapper.close(cause)
+            replacementChannel.close(cause)
         }
     }
 
-    return wrapper
+    return replacementChannel
 }
 
-private class ByteChannelWrapper(private val delegate: ByteChannel) : ByteChannel by delegate {
-
-    override fun close(cause: Throwable?): Boolean {
-        val mappedCause = when (cause?.rootCause) {
-            is SocketTimeoutException -> HttpSocketTimeoutException()
-            else -> cause
-        }
-
-        return delegate.close(mappedCause)
+/**
+ * Creates [ByteChannel] that maps close exceptions (close the channel with [HttpSocketTimeoutException] if asked to
+ * close it with [SocketTimeoutException]).
+ */
+private fun ByteChannelWithMappedExceptions() = ByteChannel { cause ->
+    when (cause?.rootCause) {
+        is SocketTimeoutException -> HttpSocketTimeoutException()
+        else -> cause
     }
 }
