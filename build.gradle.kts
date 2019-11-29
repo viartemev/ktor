@@ -1,4 +1,13 @@
-import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.*
+
+val dokka_version: String = "0.10.0"
+var kotlin_version: String = "1.3.61"
+val coroutines_version: String = "1.3.2-1.3.60"
+val atomicfu_version: String = "0.14.1"
+val jmh_plugin_version: String = "0.4.5"
+val benchmarks_version: String = "0.2.0-dev-5"
+val spring_dependency_management_version: String = "1.0.8.RELEASE"
+val serialization_version = "0.14.0"
 
 buildscript {
     val dokka_version: String = "0.10.0"
@@ -16,26 +25,22 @@ buildscript {
      * DO NOT change the name of these properties without adapting kotlinx.train build chain.
      */
     val prop = rootProject.properties["build_snapshot_train"]
-//    ext.build_snapshot_train = prop != null && prop != ""
     val build_snapshot_train = prop != null && prop != ""
     if (build_snapshot_train) {
 //        ext.kotlin_version = rootProject.properties["kotlin_snapshot_version"]
-        val kotlin_version = rootProject.properties["kotlin_snapshot_version"]
-        if (kotlin_version == null) {
-            throw IllegalArgumentException("'kotlin_snapshot_version' should be defined when building with snapshot compiler")
-        }
+        val kotlin_version = rootProject.properties["kotlin_snapshot_version"] as? String?
+            ?: throw IllegalArgumentException("'kotlin_snapshot_version' should be defined when building with snapshot compiler")
         repositories {
             mavenLocal()
             maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
         }
 
         configurations.classpath {
-            //            resolutionStrategy.eachDependency { details ->
-//                //                DependencyResolveDetails details ->
-//                if (details.requested.group == "org.jetbrains.kotlin") {
-////                    details.useVersion kotlin_version
-//                }
-//            }
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.jetbrains.kotlin") {
+                    useVersion(kotlin_version)
+                }
+            }
         }
     }
 
@@ -61,10 +66,18 @@ buildscript {
     }
 }
 
+val prop = rootProject.properties["build_snapshot_train"]
+val build_snapshot_train = prop != null && prop != ""
 
-//ext.configuredVersion = project.hasProperty("releaseVersion") ? project.releaseVersion : project.version
-//ext.globalM2 = "$buildDir/m2"
-//ext.publishLocal = project.hasProperty("publishLocal")
+val configuredVersion = if (project.hasProperty("releaseVersion")) {
+    project.ext["releaseVersion"]
+} else {
+    project.version
+}
+
+val globalM2 = "$buildDir/m2"
+project.ext["publishLocal"] = project.hasProperty("publishLocal")
+project.ext["configuredVersion"] = configuredVersion
 
 apply(from = "gradle/experimental.gradle")
 apply(from = "gradle/verifier.gradle")
@@ -74,13 +87,13 @@ apply(from = "gradle/verifier.gradle")
  * Don"t create `posix` and `darwin` sourceSets in single project.
  */
 val platforms = listOf("common", "jvm", "js", "posix", "darwin")
-project.ext["skipPublish"] = listOf(
+val skipPublish = listOf(
     "binary-compatibility-validator", "ktor-server-benchmarks", "ktor-client-benchmarks"
 )
 project.ext["nonDefaultProjectStructure"] = listOf("ktor-bom")
 
-fun projectNeedsPlatform(project: Project, platform: String) {
-    if (rootProject.ext["skipPublish"].contains(project.name)) return platform == "jvm"
+fun projectNeedsPlatform(project: Project, platform: String): Boolean {
+    if (project.name in skipPublish) return platform == "jvm"
 
     val files = project.projectDir.listFiles()
     val hasPosix = files.any { it.name == "posix" }
@@ -97,18 +110,18 @@ fun projectNeedsPlatform(project: Project, platform: String) {
 
 fun check(version: Any, libVersion: String, libName: String) {
     if (version != libVersion) {
-        throw new IllegalStateException ("Current deploy version is $version, but $libName version is not overridden ($libVersion)")
+        throw IllegalStateException("Current deploy version is $version, but $libName version is not overridden ($libVersion)")
     }
 }
 
 allprojects {
     group = "io.ktor"
-    version = configuredVersion
-    project.ext.hostManager = HostManager()
+    version = configuredVersion!!
+    project.ext["hostManager"] = HostManager()
 
     if (build_snapshot_train) {
-        ext.kotlin_version = rootProject.properties["kotlin_snapshot_version"]
-        println("Using Kotlin $kotlin_version for project $it")
+        kotlin_version = rootProject.properties["kotlin_snapshot_version"] as String
+        println("Using Kotlin $kotlin_version for project $project")
         val deployVersion = properties["DeployVersion"]
         if (deployVersion != null) version = deployVersion
 
@@ -118,7 +131,7 @@ allprojects {
             check(version, coroutines_version, "coroutines")
             check(version, serialization_version, "serialization")
         }
-        kotlin_version = rootProject.properties["kotlin_snapshot_version"]
+        kotlin_version = rootProject.properties["kotlin_snapshot_version"] as String
         repositories {
             mavenLocal()
             maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
@@ -128,18 +141,18 @@ allprojects {
     repositories {
         mavenLocal()
         maven {
-            url = "https://dl.bintray.com/kotlin/kotlinx/"
+            url = java.net.URI("https://dl.bintray.com/kotlin/kotlinx/")
             credentials {
                 username = if (project.hasProperty("bintrayUser")) {
-                    project.property("bintrayUser")
+                    project.property("bintrayUser") as String?
                 } else {
-                    System.getenv("BINTRAY_USER")
+                    System.getenv("BINTRAY_USER") as String?
                 } ?: ""
 
                 password = if (project.hasProperty("bintrayApiKey")) {
-                    project.property("bintrayApiKey")
+                    project.property("bintrayApiKey") as String?
                 } else {
-                    System.getenv("BINTRAY_API_KEY")
+                    System.getenv("BINTRAY_API_KEY") as String?
                 } ?: ""
             }
         }
@@ -150,118 +163,117 @@ allprojects {
 
     }
 
-    if (rootProject.ext.nonDefaultProjectStructure.contains(project.name)) return
+    val nonDefaultProjectStructure: List<String> by rootProject.ext
+    if (project.name in nonDefaultProjectStructure) return@allprojects
 
     apply(plugin = "kotlin-multiplatform")
 
-    platforms.each { platform ->
+    platforms.forEach { platform ->
         if (projectNeedsPlatform(project, platform)) {
-            configure([it]) {
-                apply(from = rootProject.file("gradle/utility.gradle"))
-                apply(from = rootProject.file("gradle/${platform}.gradle"))
-            }
+            apply(from = rootProject.file("gradle/utility.gradle"))
+            apply(from = rootProject.file("gradle/${platform}.gradle"))
         }
     }
 
-    if (!rootProject.ext.skipPublish.contains(project.name)) {
-        apply(from = rootProject.file("gradle/dokka.gradle"))
-        apply(from = rootProject.file("gradle/publish.gradle"))
+    if (!skipPublish.contains(project.name)) {
+//        apply(from = rootProject.file("gradle/dokka.gradle"))
+//        apply(from = rootProject.file("gradle/publish.gradle"))
     }
 
-    configurations { testOutput }
+//    configurations { testOutput }
 
-    kotlin {
-        configure(sourceSets) {
-            val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
-            val platform = name[0..-5]
-
-            kotlin.srcDirs = ["$platform/$srcDir"]
-            resources.srcDirs = ["$platform/${resourcesPrefix}resources"]
-
-            languageSettings {
-                progressiveMode = true
-                experimentalAnnotations.each { useExperimentalAnnotation(it) }
-
-                if (project.path.startsWith(":ktor-server:ktor-server") && project.name != "ktor-server-core") {
-                    useExperimentalAnnotation("io.ktor.server.engine.EngineAPI")
-                }
-            }
-        }
-    }
+//    kotlin {
+//        configure(sourceSets) {
+//            val srcDir = if (name.endsWith("Main")) "src" else "test"
+//            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
+//            val platform = name[0..-5]
+//
+//            kotlin.srcDirs = ["$platform/$srcDir"]
+//            resources.srcDirs = ["$platform/${resourcesPrefix}resources"]
+//
+//            languageSettings {
+//                progressiveMode = true
+//                experimentalAnnotations.each { useExperimentalAnnotation(it) }
+//
+//                if (project.path.startsWith(":ktor-server:ktor-server") && project.name != "ktor-server-core") {
+//                    useExperimentalAnnotation("io.ktor.server.engine.EngineAPI")
+//                }
+//            }
+//        }
+//    }
 }
 
-tasks.register<KotlinTestReport>("rootAllTest") {
-    val rootAllTest = it
-    destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
+//tasks.register<KotlinTestReport>("rootAllTest") {
+//    val rootAllTest = it
+//    destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
+//
+//    allprojects {
+//        it.afterEvaluate {
+//            if (it.tasks.findByName("allTests") != null) {
+//                val projectTests = it.tasks.named("allTests")
+//                rootAllTest.addChild(projectTests)
+//                rootAllTest.dependsOn(projectTests)
+//            }
+//        }
+//    }
+//
+//    beforeEvaluate {
+//        project.gradle.taskGraph.whenReady { graph ->
+//            rootAllTest.maybeOverrideReporting(graph)
+//        }
+//    }
+//}
 
-    allprojects {
-        it.afterEvaluate {
-            if (it.tasks.findByName("allTests") != null) {
-                val projectTests = it.tasks.named("allTests")
-                rootAllTest.addChild(projectTests)
-                rootAllTest.dependsOn(projectTests)
-            }
-        }
-    }
+//build.dependsOn(rootAllTest)
 
-    beforeEvaluate {
-        project.gradle.taskGraph.whenReady { graph ->
-            rootAllTest.maybeOverrideReporting(graph)
-        }
-    }
-}
-
-build.dependsOn(rootAllTest)
-
-println("Using Kotlin compiler version: $org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION")
+//println("Using Kotlin compiler version: $org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION")
 if (build_snapshot_train) {
     println("Hacking test tasks, removing stress and flaky tests")
     allprojects {
-        tasks.withType(Test).all {
-            exclude("**/*ServerSocketTest*")
-            exclude("**/*NettyStressTest*")
-            exclude("**/*CIOMultithreadedTest*")
-            exclude("**/*testBlockingConcurrency*")
-            exclude("**/*testBigFile*")
-            exclude("**/*numberTest*")
-            exclude("**/*testWithPause*")
-            exclude("**/*WebSocketTest*")
-            exclude("**/*PostTest*")
-        }
+        //        tasks.withType(Test).all {
+//            exclude("**/*ServerSocketTest*")
+//            exclude("**/*NettyStressTest*")
+//            exclude("**/*CIOMultithreadedTest*")
+//            exclude("**/*testBlockingConcurrency*")
+//            exclude("**/*testBigFile*")
+//            exclude("**/*numberTest*")
+//            exclude("**/*testWithPause*")
+//            exclude("**/*WebSocketTest*")
+//            exclude("**/*PostTest*")
+//        }
     }
 
     println("Manifest of kotlin-compiler-embeddable.jar")
-    configure(subprojects.findAll { it.name == "ktor-client" }) {
-        configurations.matching { it.name == "kotlinCompilerClasspath" }.all {
-            resolvedConfiguration.getFiles().findAll { it.name.contains("kotlin-compiler-embeddable") }.each {
-                val manifest = zipTree(it).matching {
-                    include("META-INF/MANIFEST.MF")
-                }.getFiles().first()
-
-                manifest.readLines().each {
-                    println(it)
-                }
-            }
-        }
-    }
+//    configure(subprojects.findAll { it.name == "ktor-client" }) {
+//        configurations.matching { it.name == "kotlinCompilerClasspath" }.all {
+//            resolvedConfiguration.getFiles().findAll { it.name.contains("kotlin-compiler-embeddable") }.each {
+//                val manifest = zipTree(it).matching {
+//                    include("META-INF/MANIFEST.MF")
+//                }.getFiles().first()
+//
+//                manifest.readLines().each {
+//                    println(it)
+//                }
+//            }
+//        }
+//    }
 }
 
 afterEvaluate {
-    val allCompileKotlinTasks = subprojects.collect {
-        if (it.hasProperty("compileKotlinJvm")) [it.compileKotlinJvm] else []
-    }.flatten()
-
-    configure(allCompileKotlinTasks) {
-        kotlinOptions.freeCompilerArgs += ["-XXLanguage:+InlineClasses"]
-    }
-
-    tasks.register<Dokka>("dokkaWebsite") {
-        outputFormat = "kotlin-website"
-        outputDirectory = "${rootProject.projectDir}/apidoc"
-
-        kotlinTasks { allCompileKotlinTasks }
-
-        reportUndocumented = false
-    }
+    //    val allCompileKotlinTasks = subprojects.collect {
+//        if (it.hasProperty("compileKotlinJvm")) [it.compileKotlinJvm] else []
+//    }.flatten()
+//
+//    configure(allCompileKotlinTasks) {
+//        kotlinOptions.freeCompilerArgs += ["-XXLanguage:+InlineClasses"]
+//    }
+//
+//    tasks.register<Dokka>("dokkaWebsite") {
+//        outputFormat = "kotlin-website"
+//        outputDirectory = "${rootProject.projectDir}/apidoc"
+//
+//        kotlinTasks { allCompileKotlinTasks }
+//
+//        reportUndocumented = false
+//    }
 }
