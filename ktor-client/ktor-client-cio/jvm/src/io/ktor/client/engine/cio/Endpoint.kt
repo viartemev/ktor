@@ -116,7 +116,11 @@ internal class Endpoint(
 
             response.resume(responseData)
         } catch (cause: Throwable) {
-            response.resumeWithException(cause)
+            val mappedException = when (cause.rootCause) {
+                is SocketTimeoutException -> HttpSocketTimeoutException()
+                else -> cause
+            }
+            response.resumeWithException(mappedException)
         }
     }
 

@@ -52,7 +52,8 @@ interface HttpClientEngine : CoroutineScope, Closeable {
      */
     @InternalAPI
     fun install(client: HttpClient) {
-        client.requestPipeline.intercept(HttpRequestPipeline.Before) {
+        // This interceptor should be placed after HttpRequestLifecycle and HttpTimeout features.
+        client.requestPipeline.intercept(HttpRequestPipeline.State) {
             val clientEngineJob = this@HttpClientEngine.coroutineContext[Job]!!
             attachToClientEngineJob(clientEngineJob)
         }
