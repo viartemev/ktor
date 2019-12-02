@@ -5,14 +5,15 @@
 package io.ktor.client.tests
 
 import io.ktor.client.engine.mock.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
 import kotlin.test.*
 
-class HttpClientCallTest {
+class HttpClientCallTest : ClientLoader() {
     @Test
-    fun receiveWithExceptionTest() = clientTest(MockEngine) {
+    fun testReceiveWithException() = clientTest(MockEngine) {
         config {
             engine {
                 addHandler {
@@ -26,6 +27,15 @@ class HttpClientCallTest {
             val call = client.get<HttpStatement>("http://localhost")
             val cause = assertFails { call.receive<String>() }
             assertTrue { cause.message!!.contains("TestException") }
+        }
+    }
+
+    @Test
+    fun testNotFound() = clientTests {
+        test { client ->
+            assertFailsWith<ClientRequestException> {
+                client.get<String>("$TEST_SERVER/not_found")
+            }
         }
     }
 }

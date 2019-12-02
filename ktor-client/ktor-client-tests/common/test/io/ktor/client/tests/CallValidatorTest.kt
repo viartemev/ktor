@@ -4,7 +4,6 @@
 
 package io.ktor.client.tests
 
-import io.ktor.client.call.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
