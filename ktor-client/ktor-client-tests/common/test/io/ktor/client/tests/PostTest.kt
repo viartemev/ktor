@@ -6,10 +6,14 @@ package io.ktor.client.tests
 
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
+import io.ktor.http.*
 import io.ktor.http.content.*
-import kotlinx.coroutines.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
+import kotlinx.coroutines.*
 import kotlin.test.*
 
 class PostTest : ClientLoader() {
@@ -45,6 +49,21 @@ class PostTest : ClientLoader() {
             }
 
             assertEquals(content + content, response)
+        }
+    }
+
+    @Test
+    fun testFormUpload() = clientTests {
+        test { client ->
+            val data = formData {
+                val bytes = ByteArray(63 * 1024)
+                append("jar", "user.jar") {
+                    writeFully(bytes, 0, bytes.size)
+                }
+            }
+
+            val response = client.submitFormWithBinaryData<HttpResponse>("$TEST_SERVER/content/upload", data)
+            assertEquals(HttpStatusCode.OK, response.status)
         }
     }
 
