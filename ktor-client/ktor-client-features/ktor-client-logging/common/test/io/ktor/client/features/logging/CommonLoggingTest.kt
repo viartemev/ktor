@@ -8,14 +8,13 @@ import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
-import kotlinx.coroutines.*
 import kotlin.test.*
 
 
 class CommonLoggingTest {
 
     @Test
-    fun testLogRequestWithException() = clientTest(MockEngine {
+    fun testLogRequestWithException() = testWithEngine(MockEngine {
         throw CustomError("BAD REQUEST")
     }) {
         val testLogger = TestLogger()
@@ -40,11 +39,15 @@ class CommonLoggingTest {
             /**
              * Note: no way to join logger context => unpredictable logger output.
              */
+
+            /**
+             * Note: no way to join logger context => unpredictable logger output.
+             */
         }
     }
 
     @Test
-    fun testLogResponseWithException() = clientTest(MockEngine { request ->
+    fun testLogResponseWithException() = testWithEngine(MockEngine { request ->
         respondOk("Hello")
     }) {
         val testLogger = TestLogger()
