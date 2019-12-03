@@ -69,8 +69,8 @@ class SessionTransportTransformerEncrypt(
     override fun transformRead(transportValue: String): String? {
         try {
             val encryptedMac = transportValue.substringAfterLast('/', "")
-            val iv = hex(transportValue.substringBeforeLast('/'))
-            val encrypted = hex(encryptedMac.substringBeforeLast(':'))
+            val iv = fromHex(transportValue.substringBeforeLast('/'))
+            val encrypted = fromHex(encryptedMac.substringBeforeLast(':'))
             val macHex = encryptedMac.substringAfterLast(':', "")
             val decrypted = decrypt(iv, encrypted)
 

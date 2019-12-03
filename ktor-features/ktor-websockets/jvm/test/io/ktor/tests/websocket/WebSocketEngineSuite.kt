@@ -457,7 +457,7 @@ abstract class WebSocketEngineSuite<TEngine : ApplicationEngine, TConfiguration 
 
     private fun OutputStream.writeHex(hex: String) = write(fromHexDump(hex))
 
-    private fun fromHexDump(hex: String) = hex(hex.replace("0x", "").replace("\\s+".toRegex(), ""))
+    private fun fromHexDump(hex: String) = fromHex(hex.replace("0x", "").replace("\\s+".toRegex(), ""))
 
     private fun InputStream.readFrame(): Frame {
         val opcodeAndFin = readOrFail()

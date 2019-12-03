@@ -14,7 +14,7 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.*
 import io.ktor.sessions.*
 import io.ktor.util.date.*
-import io.ktor.util.hex
+import io.ktor.util.fromHex
 import kotlinx.coroutines.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlin.random.*
@@ -156,7 +156,7 @@ class SessionTest {
 
     @Test
     fun testSessionByValueMac() {
-        val key = hex("03515606058610610561058")
+        val key = fromHex("03515606058610610561058")
         withTestApplication {
             application.install(Sessions) {
                 cookie<TestUserSession>(cookieName) {
@@ -170,9 +170,9 @@ class SessionTest {
 
     @Test
     fun testSessionEncrypted() {
-        val encryptKey = hex("00112233445566778899aabbccddeeff")
-        val signKey = hex("02030405060708090a0b0c")
-        val forcedIvForTesting = hex("00112233445566778899aabbccddeeff")
+        val encryptKey = fromHex("00112233445566778899aabbccddeeff")
+        val signKey = fromHex("02030405060708090a0b0c")
+        val forcedIvForTesting = fromHex("00112233445566778899aabbccddeeff")
 
         withTestApplication {
             application.install(Sessions) {

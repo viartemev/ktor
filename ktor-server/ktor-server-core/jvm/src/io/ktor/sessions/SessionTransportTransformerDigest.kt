@@ -30,7 +30,7 @@ class SessionTransportTransformerDigest(val salt: String = "ktor", val algorithm
         val value = transportValue.substringBeforeLast(delimiter)
 
         val providedBytes = try {
-            hex(providedSignature)
+            fromHex(providedSignature)
         } catch (e: NumberFormatException) {
             return null
         }

@@ -12,7 +12,7 @@ class HexFunctionsTest {
     @Test
     fun testEmpty() {
         assertEquals("", hex(ByteArray(0)))
-        assertArrayEquals(ByteArray(0), hex(""))
+        assertArrayEquals(ByteArray(0), fromHex(""))
     }
 
     @Test
@@ -41,6 +41,6 @@ class HexFunctionsTest {
 
     private fun test(byteArray: ByteArray, text: String) {
         assertEquals(text, hex(byteArray))
-        assertArrayEquals(byteArray, hex(text))
+        assertArrayEquals(byteArray, fromHex(text))
     }
 }

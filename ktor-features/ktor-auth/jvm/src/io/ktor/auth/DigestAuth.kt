@@ -219,7 +219,7 @@ suspend fun DigestCredential.verifier(
     val validDigest = expectedDigest(method, digester, userNameRealmPasswordDigestResult ?: ByteArray(0))
 
     val incoming: ByteArray = try {
-        hex(response)
+        fromHex(response)
     } catch (e: NumberFormatException) {
         return false
     }
