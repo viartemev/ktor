@@ -72,7 +72,6 @@ internal suspend fun HttpRequestData.write(
         }
     } catch (cause: Throwable) {
         channel.close(cause)
-        throw cause
     } finally {
         channel.flush()
         chunkedJob?.channel?.close()

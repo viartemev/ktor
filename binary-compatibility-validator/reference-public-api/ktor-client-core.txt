@@ -179,12 +179,11 @@ public abstract class io/ktor/client/engine/HttpClientEngineBase : io/ktor/clien
 }
 
 public abstract interface class io/ktor/client/engine/HttpClientEngineCapability {
-	public abstract fun createEmptyConfiguration ()Ljava/lang/Object;
 }
 
 public final class io/ktor/client/engine/HttpClientEngineCapabilityKt {
-	public static final fun getDefaultCapabilities ()Ljava/util/Set;
-	public static final fun getEngineCapabilitiesKey ()Lio/ktor/util/AttributeKey;
+	public static final fun getDEFAULT_CAPABILITIES ()Ljava/util/Set;
+	public static final fun getENGINE_CAPABILITIES_KEY ()Lio/ktor/util/AttributeKey;
 }
 
 public class io/ktor/client/engine/HttpClientEngineConfig {
@@ -399,8 +398,6 @@ public final class io/ktor/client/features/HttpTimeout {
 }
 
 public final class io/ktor/client/features/HttpTimeout$Feature : io/ktor/client/engine/HttpClientEngineCapability, io/ktor/client/features/HttpClientFeature {
-	public fun createEmptyConfiguration ()Lio/ktor/client/features/HttpTimeout$HttpTimeoutCapabilityConfiguration;
-	public synthetic fun createEmptyConfiguration ()Ljava/lang/Object;
 	public fun getKey ()Lio/ktor/util/AttributeKey;
 	public fun install (Lio/ktor/client/features/HttpTimeout;Lio/ktor/client/HttpClient;)V
 	public synthetic fun install (Ljava/lang/Object;Lio/ktor/client/HttpClient;)V
@@ -432,6 +429,7 @@ public final class io/ktor/client/features/HttpTimeoutJVMKt {
 public final class io/ktor/client/features/HttpTimeoutKt {
 	public static final fun convertLongTimeoutToIntWithInfiniteAsZero (J)I
 	public static final fun convertLongTimeoutToLongWithInfiniteAsZero (J)J
+	public static final fun timeout (Lio/ktor/client/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/ktor/client/features/RedirectResponseException : io/ktor/client/features/ResponseException {
@@ -802,7 +800,6 @@ public final class io/ktor/client/request/HttpRequestBuilder : io/ktor/http/Http
 	public static final field Companion Lio/ktor/client/request/HttpRequestBuilder$Companion;
 	public fun <init> ()V
 	public final fun build ()Lio/ktor/client/request/HttpRequestData;
-	public final fun configurePerRequest (Lio/ktor/client/engine/HttpClientEngineCapability;Lkotlin/jvm/functions/Function1;)V
 	public final fun getAttributes ()Lio/ktor/util/Attributes;
 	public final fun getBody ()Ljava/lang/Object;
 	public final fun getCapabilityOrNull (Lio/ktor/client/engine/HttpClientEngineCapability;)Ljava/lang/Object;
