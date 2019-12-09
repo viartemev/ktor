@@ -125,10 +125,11 @@ class HttpTimeout(
                 }
             }
         }
-
-        override fun createEmptyConfiguration() = HttpTimeoutCapabilityConfiguration()
     }
 }
+
+fun HttpRequestBuilder.timeout(block: HttpTimeout.HttpTimeoutCapabilityConfiguration.() -> Unit) =
+    setCapability(HttpTimeout, HttpTimeout.HttpTimeoutCapabilityConfiguration().apply(block))
 
 /**
  * This exception is thrown in case request timeout exceeded.

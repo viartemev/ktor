@@ -135,14 +135,6 @@ class HttpRequestBuilder : HttpMessageBuilder {
      * Set capability configuration.
      */
     @KtorExperimentalAPI
-    fun <T : Any> configurePerRequest(key: HttpClientEngineCapability<T>, block: T.() -> Unit) {
-        setCapability(key, key.createEmptyConfiguration().also(block))
-    }
-
-    /**
-     * Set capability configuration.
-     */
-    @KtorExperimentalAPI
     fun <T : Any> setCapability(key: HttpClientEngineCapability<T>, capability: T) {
         val capabilities = attributes.computeIfAbsent(ENGINE_CAPABILITIES_KEY) { mutableMapOf() }
         capabilities[key] = capability
