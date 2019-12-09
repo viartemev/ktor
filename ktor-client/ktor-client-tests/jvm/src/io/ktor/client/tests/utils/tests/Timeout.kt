@@ -7,14 +7,10 @@ package io.ktor.client.tests.utils.tests
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import java.lang.StringBuilder
 
 internal fun Application.timeoutTest() {
     routing {
@@ -58,13 +54,13 @@ internal fun Application.timeoutTest() {
             post("/slow-read") {
                 val buffer = ByteArray(1024 * 1024)
                 val input = call.request.receiveChannel()
-                var cnt = 0
+                var count = 0
                 while (true) {
                     val read = input.readAvailable(buffer)
                     if (read == -1) break
-                    cnt += read
-                    if (cnt >= 1024 * 1024) {
-                        cnt = 0
+                    count += read
+                    if (count >= 1024 * 1024) {
+                        count = 0
                         delay(1000)
                     }
                 }
