@@ -42,12 +42,16 @@ class LRUCache<K, V> internal constructor(
     }
 
     override fun get(key: K): V {
-        synchronized(this) {
-            super.get(key)?.let { return it }
+        return if (maxSize == 0) {
+            supplier(key)
+        } else {
+            synchronized(this) {
+                super.get(key)?.let { return it }
 
-            supplier(key).let {
-                put(key, it)
-                return it
+                supplier(key).let {
+                    put(key, it)
+                    it
+                }
             }
         }
     }

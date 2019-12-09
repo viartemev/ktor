@@ -23,11 +23,6 @@ import java.net.*
 import java.util.concurrent.*
 import kotlin.coroutines.*
 
-/**
- * Size of the cache that keeps least recently used [OkHttpClient] instances.
- */
-private const val CLIENT_CACHE_SIZE = 10
-
 @InternalAPI
 @Suppress("KDocMissingDocumentation")
 class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("ktor-okhttp") {
@@ -52,7 +47,7 @@ class OkHttpEngine(override val config: OkHttpConfig) : HttpClientEngineBase("kt
     /**
      * Cache that keeps least recently used [OkHttpClient] instances.
      */
-    private val clientCache = createLRUCache(::createOkHttpClient, {}, CLIENT_CACHE_SIZE)
+    private val clientCache = createLRUCache(::createOkHttpClient, {}, config.clientCacheSize)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()

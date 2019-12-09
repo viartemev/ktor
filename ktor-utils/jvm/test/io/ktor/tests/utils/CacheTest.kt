@@ -63,4 +63,18 @@ class CacheTest {
 
         assertEquals(created.get(), closed.get() + cache.size)
     }
+
+    @Test
+    fun testWithoutCaching() {
+        val counter = AtomicInteger(0)
+        val lastRemoved = AtomicInteger(-1)
+        val cache = LRUCache<Int, Int>({ counter.incrementAndGet(); it }, { lastRemoved.set(it) }, 0)
+
+        for (i in 0 until 10) {
+            assertEquals(i, cache[i])
+            assertEquals(-1, lastRemoved.get())
+        }
+
+        assertEquals(10, counter.get())
+    }
 }
