@@ -17,19 +17,6 @@ import kotlin.test.*
 
 private const val TEST_URL = "$TEST_SERVER/timeout"
 
-/**
- * Utils function returning all active jobs in the hierarchy.
- */
-private fun Job.getActiveChildren(): Sequence<Job> = sequence {
-    for (child in children) {
-        if (child.isActive) {
-            yield(child)
-        }
-
-        yieldAll(child.getActiveChildren())
-    }
-}
-
 class HttpTimeoutTest : ClientLoader() {
     @Test
     fun testGet() = clientTests {
