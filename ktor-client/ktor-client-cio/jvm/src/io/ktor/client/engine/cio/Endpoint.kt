@@ -104,14 +104,15 @@ internal class Endpoint(
             }
 
             val timeout = config.requestTimeout
-            val responseData = if (timeout == HttpTimeout.INFINITE_TIMEOUT_MS) {
+            val writeRequestAndReadResponse: suspend CoroutineScope.() -> HttpResponseData = {
                 request.write(output, callContext, overProxy)
                 readResponse(requestTime, request, input, output, callContext)
+            }
+
+            val responseData = if (timeout == HttpTimeout.INFINITE_TIMEOUT_MS) {
+                writeRequestAndReadResponse()
             } else {
-                withTimeout(timeout) {
-                    request.write(output, callContext, overProxy)
-                    readResponse(requestTime, request, input, output, callContext)
-                }
+                withTimeout(timeout, writeRequestAndReadResponse)
             }
 
             response.resume(responseData)
@@ -151,16 +152,16 @@ internal class Endpoint(
 
                 if (address.isUnresolved) throw UnresolvedAddressException()
 
-                val connection = when (connectTimeout) {
-                    HttpTimeout.INFINITE_TIMEOUT_MS -> connectionFactory.connect(address) {
+                val connect: suspend CoroutineScope.() -> Socket = {
+                    connectionFactory.connect(address) {
                         this.socketTimeout = convertLongTimeoutToLongWithInfiniteAsZero(socketTimeout)
                     }
+                }
+
+                val connection = when (connectTimeout) {
+                    HttpTimeout.INFINITE_TIMEOUT_MS -> connect()
                     else -> {
-                        val connection = withTimeoutOrNull(connectTimeout) {
-                            connectionFactory.connect(address) {
-                                this.socketTimeout = convertLongTimeoutToLongWithInfiniteAsZero(socketTimeout)
-                            }
-                        }
+                        val connection = withTimeoutOrNull(connectTimeout, connect)
                         if (connection == null) {
                             timeoutFails++
                             return@repeat
