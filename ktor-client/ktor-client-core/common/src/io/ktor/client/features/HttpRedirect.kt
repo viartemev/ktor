@@ -42,7 +42,7 @@ class HttpRedirect {
         override fun prepare(block: HttpRedirect.() -> Unit): HttpRedirect = HttpRedirect().apply(block)
 
         override fun install(feature: HttpRedirect, scope: HttpClient) {
-            scope.feature(HttpSend)!!.intercept { context, origin ->
+            scope.feature(HttpSend)!!.intercept { origin, context ->
                 if (feature.checkHttpMethod && origin.request.method !in ALLOWED_FOR_REDIRECT) {
                     return@intercept origin
                 }
