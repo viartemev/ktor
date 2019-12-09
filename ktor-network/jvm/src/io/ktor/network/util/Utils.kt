@@ -8,10 +8,15 @@ import kotlinx.coroutines.*
 import java.net.*
 
 /**
+ * Infinite timeout in milliseconds.
+ */
+internal const val INFINITE_TIMEOUT_MS = Long.MAX_VALUE
+
+/**
  * Wrap [block] into [withTimeout] wrapper and throws [SocketTimeoutException] if timeout exceeded.
  */
 internal suspend fun CoroutineScope.withSocketTimeout(socketTimeout: Long, block: suspend CoroutineScope.() -> Unit) {
-    if (socketTimeout == 0L) {
+    if (socketTimeout == INFINITE_TIMEOUT_MS) {
         block()
     } else {
         async {
