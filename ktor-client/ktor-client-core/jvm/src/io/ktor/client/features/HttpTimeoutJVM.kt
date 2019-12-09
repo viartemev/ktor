@@ -24,7 +24,7 @@ actual class HttpSocketTimeoutException : SocketTimeoutException("Socket timeout
 fun CoroutineScope.mapEngineExceptions(input: ByteReadChannel): ByteReadChannel {
     val replacementChannel = ByteChannelWithMappedExceptions()
 
-    launch {
+    writer(coroutineContext, replacementChannel) {
         try {
             input.joinTo(replacementChannel, closeOnEnd = true)
         } catch (cause: Throwable) {
