@@ -66,7 +66,7 @@ class HttpTimeout(
 
         private fun checkTimeoutValue(value: Long?): Long? {
             require(value == null || value > 0) {
-                "Only positive timeout values are allowed, for infinite timeout use INFINITE_TIMEOUT_MS"
+                "Only positive timeout values are allowed, for infinite timeout use HttpTimeout.INFINITE_TIMEOUT_MS"
             }
             return value
         }
