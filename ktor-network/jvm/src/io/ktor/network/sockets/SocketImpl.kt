@@ -13,7 +13,7 @@ internal class SocketImpl<out S : SocketChannel>(
     private val socket: java.net.Socket,
     selector: SelectorManager,
     socketOptions: SocketOptions.TCPClientSocketOptions? = null
-) : NIOSocketImpl<S>(channel, selector, null, socketOptions),
+) : NIOSocketImpl<S>(channel, selector, pool = null, socketOptions = socketOptions),
     Socket {
     init {
         require(!channel.isBlocking) { "channel need to be configured as non-blocking" }
