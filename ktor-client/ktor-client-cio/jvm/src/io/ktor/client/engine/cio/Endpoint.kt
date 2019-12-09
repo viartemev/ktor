@@ -154,7 +154,7 @@ internal class Endpoint(
 
                 val connect: suspend CoroutineScope.() -> Socket = {
                     connectionFactory.connect(address) {
-                        this.socketTimeout = convertLongTimeoutToLongWithInfiniteAsZero(socketTimeout)
+                        this.socketTimeout = socketTimeout
                     }
                 }
 

@@ -4,6 +4,8 @@
 
 package io.ktor.network.sockets
 
+import io.ktor.network.util.*
+
 /**
  * Socket options builder
  */
@@ -146,9 +148,9 @@ sealed class SocketOptions(
         var keepAlive: Boolean? = null
 
         /**
-         * Socket timeout. Default value is 0 that means infinite timeout.
+         * Socket timeout.
          */
-        var socketTimeout: Long = 0
+        var socketTimeout: Long = INFINITE_TIMEOUT_MS
 
         @Suppress("KDocMissingDocumentation")
         override fun copyCommon(from: SocketOptions) {

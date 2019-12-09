@@ -29,7 +29,7 @@ internal fun CoroutineScope.attachForReadingImpl(
             while (true) {
                 var rc = 0
 
-                withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
+                withSocketTimeout(socketOptions?.socketTimeout ?: INFINITE_TIMEOUT_MS) {
                     do {
                         rc = nioChannel.read(buffer)
                         if (rc == 0) {
@@ -77,7 +77,7 @@ internal fun CoroutineScope.attachForReadingDirectImpl(
             while (true) {
                 var rc = 0
 
-                withSocketTimeout(socketOptions?.socketTimeout ?: 0) {
+                withSocketTimeout(socketOptions?.socketTimeout ?: INFINITE_TIMEOUT_MS) {
                     do {
                         val buffer = request(1)
                         if (buffer == null) {
