@@ -144,7 +144,7 @@ class HttpRequestBuilder : HttpMessageBuilder {
      */
     @KtorExperimentalAPI
     fun <T : Any> setCapability(key: HttpClientEngineCapability<T>, capability: T) {
-        val capabilities = attributes.computeIfAbsent(engineCapabilitiesKey) { mutableMapOf() }
+        val capabilities = attributes.computeIfAbsent(ENGINE_CAPABILITIES_KEY) { mutableMapOf() }
         capabilities[key] = capability
     }
 
@@ -154,7 +154,7 @@ class HttpRequestBuilder : HttpMessageBuilder {
     @KtorExperimentalAPI
     fun <T : Any> getCapabilityOrNull(key: HttpClientEngineCapability<T>): T? {
         @Suppress("UNCHECKED_CAST")
-        return attributes.getOrNull(engineCapabilitiesKey)?.get(key) as T?
+        return attributes.getOrNull(ENGINE_CAPABILITIES_KEY)?.get(key) as T?
     }
 
     companion object
@@ -178,14 +178,14 @@ class HttpRequestData internal constructor(
     @KtorExperimentalAPI
     fun <T> getCapabilityOrNull(key: HttpClientEngineCapability<T>): T? {
         @Suppress("UNCHECKED_CAST")
-        return attributes.getOrNull(engineCapabilitiesKey)?.get(key) as T?
+        return attributes.getOrNull(ENGINE_CAPABILITIES_KEY)?.get(key) as T?
     }
 
     /**
      * Retrieve all extension keys associated with this request.
      */
     internal fun getRequiredCapabilities(): Set<HttpClientEngineCapability<*>> =
-        attributes.getOrNull(engineCapabilitiesKey)?.keys ?: emptySet()
+        attributes.getOrNull(ENGINE_CAPABILITIES_KEY)?.keys ?: emptySet()
 
     override fun toString(): String = "HttpRequestData(url=$url, method=$method)"
 }
