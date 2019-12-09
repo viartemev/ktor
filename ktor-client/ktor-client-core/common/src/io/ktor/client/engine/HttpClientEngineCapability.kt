@@ -25,9 +25,4 @@ val DEFAULT_CAPABILITIES = setOf(HttpTimeout)
 /**
  * Capability required by request to be supported by [HttpClientEngine].
  */
-interface HttpClientEngineCapability<T> {
-    /**
-     * Create an empty instance of capability configuration.
-     */
-    fun createEmptyConfiguration(): T
-}
+interface HttpClientEngineCapability<T>

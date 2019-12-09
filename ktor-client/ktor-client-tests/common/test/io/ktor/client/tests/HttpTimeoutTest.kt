@@ -131,7 +131,7 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<String>("$TEST_URL/with-delay") {
                     parameter("delay", 5000)
 
-                    configurePerRequest(HttpTimeout) { requestTimeoutMillis = 10 }
+                    timeout { requestTimeoutMillis = 10 }
                 }
             }
         }
@@ -165,7 +165,7 @@ class HttpTimeoutTest : ClientLoader() {
                 method = HttpMethod.Get
                 parameter("delay", 10)
 
-                configurePerRequest(HttpTimeout) { requestTimeoutMillis = 500 }
+                timeout { requestTimeoutMillis = 500 }
             }
             val result: String = response.receive()
 
@@ -201,7 +201,7 @@ class HttpTimeoutTest : ClientLoader() {
                 method = HttpMethod.Get
                 parameter("delay", 500)
 
-                configurePerRequest(HttpTimeout) { requestTimeoutMillis = 1000 }
+                timeout { requestTimeoutMillis = 1000 }
             }
             assertFailsWithRootCause<HttpRequestTimeoutException> {
                 response.readUTF8Line()
@@ -234,7 +234,7 @@ class HttpTimeoutTest : ClientLoader() {
             val response = client.get<ByteArray>("$TEST_URL/with-stream") {
                 parameter("delay", 10)
 
-                configurePerRequest(HttpTimeout) { requestTimeoutMillis = 500 }
+                timeout { requestTimeoutMillis = 500 }
             }
 
             assertEquals("Text", String(response))
@@ -267,7 +267,7 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<ByteArray>("$TEST_URL/with-stream") {
                     parameter("delay", 200)
 
-                    configurePerRequest(HttpTimeout) { requestTimeoutMillis = 500 }
+                    timeout { requestTimeoutMillis = 500 }
                 }
             }
         }
@@ -300,7 +300,7 @@ class HttpTimeoutTest : ClientLoader() {
                 parameter("delay", 10)
                 parameter("count", 2)
 
-                configurePerRequest(HttpTimeout) { requestTimeoutMillis = 500 }
+                timeout { requestTimeoutMillis = 500 }
             }
             assertEquals("Text", response)
         }
@@ -334,7 +334,7 @@ class HttpTimeoutTest : ClientLoader() {
                     parameter("delay", 500)
                     parameter("count", 5)
 
-                    configurePerRequest(HttpTimeout) { requestTimeoutMillis = 10 }
+                    timeout { requestTimeoutMillis = 10 }
                 }
             }
         }
@@ -368,7 +368,7 @@ class HttpTimeoutTest : ClientLoader() {
                     parameter("delay", 250)
                     parameter("count", 5)
 
-                    configurePerRequest(HttpTimeout) { requestTimeoutMillis = 200 }
+                    timeout { requestTimeoutMillis = 200 }
                 }
             }
         }
@@ -396,7 +396,7 @@ class HttpTimeoutTest : ClientLoader() {
         test { client ->
             assertFailsWithRootCause<HttpConnectTimeoutException> {
                 client.get<String>("http://www.google.com:81") {
-                    configurePerRequest(HttpTimeout) { connectTimeoutMillis = 1000 }
+                    timeout { connectTimeoutMillis = 1000 }
                 }
             }
         }
@@ -428,7 +428,7 @@ class HttpTimeoutTest : ClientLoader() {
                 client.get<String>("$TEST_URL/with-stream") {
                     parameter("delay", 5000)
 
-                    configurePerRequest(HttpTimeout) { socketTimeoutMillis = 1000 }
+                    timeout { socketTimeoutMillis = 1000 }
                 }
             }
         }
@@ -457,7 +457,7 @@ class HttpTimeoutTest : ClientLoader() {
             assertFailsWithRootCause<HttpSocketTimeoutException> {
                 client.post("$TEST_URL/slow-read") {
                     body = makeString(4 * 1024 * 1024)
-                    configurePerRequest(HttpTimeout) { socketTimeoutMillis = 500 }
+                    timeout { socketTimeoutMillis = 500 }
                 }
             }
         }
@@ -504,7 +504,7 @@ class HttpTimeoutTest : ClientLoader() {
         test { client ->
             assertFailsWith<IllegalArgumentException> {
                 client.get<String>("https://www.google.com") {
-                    configurePerRequest(HttpTimeout) { requestTimeoutMillis = 1000 }
+                    timeout { requestTimeoutMillis = 1000 }
                 }
             }
         }
