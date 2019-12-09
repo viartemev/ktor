@@ -13,14 +13,14 @@ import kotlin.native.concurrent.*
  */
 @KtorExperimentalAPI
 @SharedImmutable
-val engineCapabilitiesKey = AttributeKey<MutableMap<HttpClientEngineCapability<*>, Any>>("EngineCapabilities")
+val ENGINE_CAPABILITIES_KEY = AttributeKey<MutableMap<HttpClientEngineCapability<*>, Any>>("EngineCapabilities")
 
 /**
  * Default capabilities expected to be supported by engine.
  */
 @KtorExperimentalAPI
 @SharedImmutable
-val defaultCapabilities = setOf(HttpTimeout)
+val DEFAULT_CAPABILITIES = setOf(HttpTimeout)
 
 /**
  * Capability required by request to be supported by [HttpClientEngine].

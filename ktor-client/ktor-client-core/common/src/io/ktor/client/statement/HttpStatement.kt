@@ -127,7 +127,7 @@ class HttpStatement(
      * Check that all request configuration related to client capabilities have correspondent features installed.
      */
     private fun checkCapabilities() {
-        builder.attributes.getOrNull(engineCapabilitiesKey)?.keys
+        builder.attributes.getOrNull(ENGINE_CAPABILITIES_KEY)?.keys
             ?.filter { it is HttpClientFeature<*, *> }
             ?.forEach {
                 requireNotNull(client.feature(it as HttpClientFeature<*, *>)) {
