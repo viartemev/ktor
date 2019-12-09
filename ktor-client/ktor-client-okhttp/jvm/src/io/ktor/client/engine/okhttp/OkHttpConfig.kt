@@ -24,6 +24,11 @@ class OkHttpConfig : HttpClientEngineConfig() {
     var preconfigured: OkHttpClient? = null
 
     /**
+     * Size of the cache that keeps least recently used [OkHttpClient] instances. Set "0" to avoid caching.
+     */
+    var clientCacheSize: Int = 10
+
+    /**
      * Configure [OkHttpClient] using [OkHttpClient.Builder].
      */
     fun config(block: OkHttpClient.Builder.() -> Unit) {

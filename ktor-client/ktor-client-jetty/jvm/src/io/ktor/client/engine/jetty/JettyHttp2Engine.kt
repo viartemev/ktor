@@ -13,11 +13,6 @@ import kotlinx.coroutines.*
 import org.eclipse.jetty.http2.client.*
 import org.eclipse.jetty.util.thread.*
 
-/**
- * Size of the cache that keeps least recently used [HTTP2Client] instances.
- */
-private const val CLIENT_CACHE_SIZE = 10
-
 internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpClientEngineBase("ktor-jetty") {
 
     override val dispatcher: CoroutineDispatcher by lazy {
@@ -30,9 +25,9 @@ internal class JettyHttp2Engine(override val config: JettyEngineConfig) : HttpCl
     override val supportedCapabilities = setOf(HttpTimeout)
 
     /**
-     * Cache that keeps least recently used [HTTP2Client] instances.
+     * Cache that keeps least recently used [HTTP2Client] instances. Set "0" to avoid caching.
      */
-    private val clientCache = createLRUCache(::createJettyClient, HTTP2Client::stop, CLIENT_CACHE_SIZE)
+    private val clientCache = createLRUCache(::createJettyClient, HTTP2Client::stop, config.clientCacheSize)
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val callContext = callContext()
