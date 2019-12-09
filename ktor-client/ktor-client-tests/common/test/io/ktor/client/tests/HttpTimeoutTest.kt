@@ -33,6 +33,30 @@ class HttpTimeoutTest : ClientLoader() {
     }
 
     @Test
+    fun testGetWithExceptionAndTryAgain() = clientTests {
+        test { client ->
+            val requestBuilder = HttpRequestBuilder().apply {
+                method = HttpMethod.Get
+                url("$TEST_URL/404")
+                parameter("delay", 10)
+            }
+
+            val job = requestBuilder.executionContext
+            assertTrue { job.isActive }
+
+            assertFails { client.request<String>(requestBuilder) }
+            assertTrue { job.isActive }
+
+            requestBuilder.url("$TEST_URL/with-delay")
+
+            val response = client.request<String>(requestBuilder)
+
+            assertEquals("Text", response)
+            assertTrue { job.isActive }
+        }
+    }
+
+    @Test
     fun testWithExternalTimeout() = clientTests {
         config {
             install(HttpTimeout)
