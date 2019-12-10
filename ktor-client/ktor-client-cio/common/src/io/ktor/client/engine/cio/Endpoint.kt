@@ -4,7 +4,6 @@
 
 package io.ktor.client.engine.cio
 
-import io.ktor.client.engine.cio.write
 import io.ktor.client.request.*
 import io.ktor.network.sockets.*
 import io.ktor.network.sockets.Socket
@@ -12,10 +11,10 @@ import io.ktor.network.tls.*
 import io.ktor.network.util.*
 import io.ktor.util.*
 import io.ktor.util.date.*
+import io.ktor.util.native.*
 import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.*
 
@@ -29,6 +28,9 @@ internal class Endpoint(
     override val coroutineContext: CoroutineContext,
     private val onDone: () -> Unit
 ) : CoroutineScope, Closeable {
+    init {
+        protectFromFreezing()
+    }
     private val address = NetworkAddress(host, port)
 
     private val connections: AtomicInt = atomic(0)

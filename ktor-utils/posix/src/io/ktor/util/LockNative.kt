@@ -6,13 +6,13 @@ package io.ktor.util
 
 import kotlinx.cinterop.*
 import io.ktor.utils.io.core.*
-import platform.posix.*
 import utils.*
 import kotlin.native.concurrent.*
 
 @InternalAPI
 actual class Lock {
     private val mutex = nativeHeap.alloc<ktor_mutex_t>()
+    private val closed = AtomicInt(0)
 
     init {
         freeze()
@@ -20,14 +20,21 @@ actual class Lock {
     }
 
     actual fun lock() {
+        check(closed.value == 0)
+
         ktor_mutex_lock(mutex.ptr).checkResult { "Failed to lock mutex." }
     }
 
     actual fun unlock() {
+        check(closed.value == 0)
+
         ktor_mutex_unlock(mutex.ptr).checkResult { "Failed to unlock mutex." }
     }
 
     actual fun close() {
+        if (!closed.compareAndSet(0, 1)) {
+            return
+        }
         ktor_mutex_destroy(mutex.ptr)
         nativeHeap.free(mutex)
     }
