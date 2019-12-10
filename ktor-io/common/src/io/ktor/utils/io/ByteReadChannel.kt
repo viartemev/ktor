@@ -2,6 +2,7 @@ package io.ktor.utils.io
 
 import io.ktor.utils.io.bits.Memory
 import io.ktor.utils.io.core.*
+import kotlin.native.concurrent.*
 
 /**
  * Channel for asynchronous reading of sequences of bytes.
@@ -193,6 +194,7 @@ expect interface ByteReadChannel {
     ): Long
 
     companion object {
+        @ThreadLocal
         val Empty: ByteReadChannel
     }
 }

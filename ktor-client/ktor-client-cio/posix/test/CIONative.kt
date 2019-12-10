@@ -14,7 +14,8 @@ class CIONative {
     @Test
     fun testGoogle(): Unit = runBlocking {
         HttpClient(CIO).use { client ->
-            client.get<String>("http://www.google.ru/")
+            val response = client.get<String>("http://www.google.ru/")
+            println(response)
             Unit
         }
     }
