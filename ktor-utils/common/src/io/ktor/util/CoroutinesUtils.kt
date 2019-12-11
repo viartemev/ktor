@@ -36,3 +36,24 @@ internal expect inline fun <R, A>
 @InternalAPI
 fun SilentSupervisor(parent: Job? = null): CoroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, _ ->
 }
+
+/**
+ * Schedule completion block to the [CoroutineScope] [CoroutineDispatcher].
+ *
+ * In contrast to default [Job.invokeOnCompletion] it prevents block freezing.
+ */
+@InternalAPI
+fun CoroutineScope.scheduleCompletionBlock(block: (cause: Throwable?) -> Unit) {
+    val job = coroutineContext[Job] ?: error("Can't schedule completion without job: ${coroutineContext}")
+
+    GlobalScope.launch(coroutineContext) {
+        val cause = try {
+            job.join()
+            null
+        } catch (cause: Throwable) {
+            cause
+        }
+
+        block(cause)
+    }
+}

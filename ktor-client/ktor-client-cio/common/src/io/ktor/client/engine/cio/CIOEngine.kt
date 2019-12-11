@@ -9,6 +9,7 @@ import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.network.selector.*
+import io.ktor.util.*
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -59,7 +60,7 @@ internal class CIOEngine(
         super.close()
         endpoints.forEach { (_, endpoint) -> endpoint.close() }
 
-        coroutineContext[Job]!!.invokeOnCompletion {
+        scheduleCompletionBlock {
             selectorManager.close()
         }
     }

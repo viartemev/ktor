@@ -6,7 +6,6 @@ package io.ktor.client.engine.cio
 
 import io.ktor.client.request.*
 import io.ktor.network.sockets.*
-import io.ktor.network.sockets.Socket
 import io.ktor.network.tls.*
 import io.ktor.network.util.*
 import io.ktor.util.*
@@ -15,7 +14,7 @@ import io.ktor.util.native.*
 import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.*
 import kotlin.coroutines.*
 
 internal class Endpoint(
@@ -31,6 +30,7 @@ internal class Endpoint(
     init {
         protectFromFreezing()
     }
+
     private val address = NetworkAddress(host, port)
 
     private val connections: AtomicInt = atomic(0)

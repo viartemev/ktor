@@ -10,13 +10,13 @@ import kotlinx.coroutines.*
 import kotlin.test.*
 
 class CIONative {
-
     @Test
-    fun testGoogle(): Unit = runBlocking {
-        HttpClient(CIO).use { client ->
+    fun testGoogle(): Unit {
+        println("X")
+        runBlocking {
+            val client = HttpClient(CIO)
             val response = client.get<String>("http://www.google.ru/")
             println(response)
-            Unit
         }
     }
 }
