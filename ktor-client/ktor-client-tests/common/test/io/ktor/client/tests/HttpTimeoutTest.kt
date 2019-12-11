@@ -123,7 +123,7 @@ class HttpTimeoutTest : ClientLoader() {
 
                 client.request<ByteReadChannel>(requestBuilder).cancel()
 
-                delay(500) // Channel is closing asynchronously.
+                delay(2000) // Channel is closing asynchronously.
                 assertTrue { requestBuilder.executionContext.getActiveChildren().none() }
             }
         }
