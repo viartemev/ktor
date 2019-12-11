@@ -6,6 +6,7 @@ package io.ktor.client.benchmarks
 
 import io.ktor.client.*
 import io.ktor.client.engine.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.utils.io.*
 import kotlinx.benchmark.*
@@ -25,6 +26,8 @@ private val testData = mutableMapOf(
 internal class ClientBenchmark {
     lateinit var client: HttpClient
 
+    lateinit var clientWithTimeout: HttpClient
+
 
     @Param("Apache", "OkHttp", "Android", "CIO")// "Jetty")
     var zengineName: String = ""
@@ -35,11 +38,44 @@ internal class ClientBenchmark {
     @Setup
     fun start() {
         client = HttpClient(findEngine(zengineName))
+        clientWithTimeout = HttpClient(findEngine(zengineName)) {
+            install(HttpTimeout)
+        }
     }
 
     @Benchmark
     fun download() = runBenchmark {
         val data = client.get<ByteArray>("$TEST_BENCHMARKS_SERVER/bytes?size=$size")
+        check(data.size == size * 1024)
+    }
+
+    @Benchmark
+    fun downloadWithRequestTimeout() = runBenchmark {
+        val data = client.get<ByteArray>("$TEST_BENCHMARKS_SERVER/bytes?size=$size") {
+            timeout {
+                requestTimeoutMillis = 1000
+            }
+        }
+        check(data.size == size * 1024)
+    }
+
+    @Benchmark
+    fun downloadWithConnectTimeout() = runBenchmark {
+        val data = client.get<ByteArray>("$TEST_BENCHMARKS_SERVER/bytes?size=$size") {
+            timeout {
+                connectTimeoutMillis = 1000
+            }
+        }
+        check(data.size == size * 1024)
+    }
+
+    @Benchmark
+    fun downloadWithSocketTimeout() = runBenchmark {
+        val data = client.get<ByteArray>("$TEST_BENCHMARKS_SERVER/bytes?size=$size") {
+            timeout {
+                socketTimeoutMillis = 1000
+            }
+        }
         check(data.size == size * 1024)
     }
 
