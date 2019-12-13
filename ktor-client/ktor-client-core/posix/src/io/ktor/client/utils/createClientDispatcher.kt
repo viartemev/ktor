@@ -14,4 +14,4 @@ import kotlinx.coroutines.*
 actual fun Dispatchers.clientDispatcher(
     threadCount: Int,
     threadName: String
-): CoroutineDispatcher = Default
+): CoroutineDispatcher = Unconfined
