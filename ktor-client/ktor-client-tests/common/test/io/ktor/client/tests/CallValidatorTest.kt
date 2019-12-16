@@ -75,7 +75,7 @@ class CallValidatorTest {
         }
     }
 
-    @Test
+//    @Test
     fun testExceptionFromReceivePipeline() = testWithEngine(MockEngine) {
         var handleTriggered = false
         config {

@@ -14,5 +14,5 @@ import io.ktor.util.*
 class CIOEngineContainer : HttpClientEngineContainer {
     override val factory: HttpClientEngineFactory<*> = CIO
 
-    override fun toString(): String = "CIO"
+    override fun toString(): String = "CIO-${Platform().name}"
 }

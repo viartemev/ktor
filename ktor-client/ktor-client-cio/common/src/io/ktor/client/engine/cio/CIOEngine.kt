@@ -91,6 +91,8 @@ internal class CIOEngine(
             )
         }
     }
+
+    override fun toString(): String = "CIO-${Platform().name}"
 }
 
 @Suppress("KDocMissingDocumentation")
