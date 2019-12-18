@@ -18,7 +18,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.future.*
 import io.ktor.utils.io.*
-import java.util.concurrent.*
 import kotlin.coroutines.*
 
 /**
@@ -80,15 +79,15 @@ class TestApplicationEngine(
     }
 
     override fun start(wait: Boolean): ApplicationEngine {
-        if (!testEngineJob.isActive) throw IllegalStateException("Test engine is already completed")
+        check(testEngineJob.isActive) { "Test engine is already completed" }
         testEngineJob.invokeOnCompletion {
-            stop(0, 0, TimeUnit.SECONDS)
+            stop(0, 0)
         }
         environment.start()
         return this
     }
 
-    override fun stop(gracePeriod: Long, timeout: Long, timeUnit: TimeUnit) {
+    override fun stop(gracePeriodMillis: Long, timeoutMillis: Long) {
         try {
             client.close()
             environment.monitor.raise(ApplicationStopPreparing, environment)
@@ -110,8 +109,8 @@ class TestApplicationEngine(
         processResponse: TestApplicationCall.() -> Unit,
         block: () -> Unit
     ) {
-        val oldProcessRequest = processRequest
-        val oldProcessResponse = processResponse
+        val oldProcessRequest = this.processRequest
+        val oldProcessResponse = this.processResponse
         this.processRequest = {
             oldProcessRequest {
                 processRequest(it)
@@ -270,7 +269,7 @@ fun TestApplicationEngine.cookiesSession(callback: () -> Unit) {
             setup() // setup after setting the cookie so the user can override cookies
         },
         processResponse = {
-            trackedCookies = response.headers.values(HttpHeaders.SetCookie).map { parseServerSetCookieHeader(it) }
+            trackedCookies += response.headers.values(HttpHeaders.SetCookie).map { parseServerSetCookieHeader(it) }
         }
     ) {
         callback()
